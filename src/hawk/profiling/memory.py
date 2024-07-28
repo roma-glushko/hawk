@@ -7,7 +7,7 @@ import pickle
 import tracemalloc
 from datetime import datetime
 from enum import Enum
-from typing import Any, Iterator, TypedDict, List, Union, Protocol
+from typing import Any, Iterator, TypedDict, List, Union, Protocol, Dict
 
 
 def format_bytes(value: int) -> str:
@@ -188,6 +188,11 @@ class PickleSnapshotRenderer:
 
 
 class TracemallocProfiler:
+    """
+    Memory profiler based on the tracemalloc standard library
+    References:
+        - https://docs.python.org/3/library/tracemalloc.html
+    """
     def __init__(self):
         self._tracemalloc_enabled_in_env = bool(os.environ.get("PYTHONTRACEMALLOC", False))
 
@@ -223,7 +228,7 @@ class TracemallocProfiler:
         tracemalloc.stop()
 
 
-renderers = {
+renderers: Dict[str, Union[Renderer, PickleSnapshotRenderer]] = {
     FormatType.LINENO: LinenoSnapshotRenderer(),
     FormatType.TRACEBACK: TracebackSnapshotRender(),
     FormatType.PICKLE: PickleSnapshotRenderer(),
