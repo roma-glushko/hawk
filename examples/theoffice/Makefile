@@ -9,6 +9,12 @@ help:
 install: ## Install project dependencies
 	@pdm install
 
+dev: ## Run a dev server
+	@pdm run fastapi dev $(PWD)/src/theoffice/main.py
+
+run: ## Run a dev server
+	@pdm run fastapi run $(PWD)/src/theoffice/main.py
+
 clean: ## Clean temporary files
 	@echo "🧹 Cleaning temporary files.."
 	@rm -rf dist
