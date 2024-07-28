@@ -9,6 +9,7 @@ from starlette.routing import Router, BaseRoute, Middleware
 
 from src.hawk.profiling.memory import FormatType, profiler as mem_profiler
 
+
 async def profile_memory(request: Request) -> Response:
     duration = int(request.query_params.get("duration", 5))
     frames = int(request.query_params.get("frames", 30))
