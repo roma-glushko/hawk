@@ -9,6 +9,8 @@ class ShowManager:
     def __init__(self):
         self._assets_path = Path(__file__).parent.parent / "assets"
 
+        self._episode_cache = {}
+
     async def get_seasons(self) -> list[SeasonShort]:
         # find all directories under assets_path
         seasons = []
@@ -43,6 +45,9 @@ class ShowManager:
         return season_metadata
 
     async def get_episode(self, season_id: int, episode_id: int) -> Episode:
+        if (episode := self._episode_cache.get((season_id, episode_id))) is not None:
+            return episode
+
         season_path = self._assets_path / f"s{season_id}"
 
         if not season_path.is_dir():
@@ -56,4 +61,7 @@ class ShowManager:
         with open(episode_metadata_file) as f:
             episode_metadata = Episode(**json.load(f))
 
+        self._episode_cache[(season_id, episode_id)] = episode_metadata
+
         return episode_metadata
+
