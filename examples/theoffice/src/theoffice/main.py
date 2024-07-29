@@ -6,6 +6,7 @@ from src.theoffice.show.exceptions import BaseHTTPException
 from src.theoffice.show.manager import ShowManager
 from src.theoffice.show.router import router as show_router
 from src.theoffice.health import router as health_router
+from src.theoffice.debug.router import router as debug_router
 
 app = FastAPI(
     title="The Office API",
@@ -13,6 +14,7 @@ app = FastAPI(
 
 app.include_router(show_router)
 app.include_router(health_router)
+app.include_router(debug_router)
 
 
 class WelcomeResponse(BaseModel):
