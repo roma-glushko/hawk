@@ -1,0 +1,23 @@
+[project]
+name = "theoffice"
+version = "0.0.1"
+description = "Default template for PDM package"
+authors = [
+    {name = "Roman Glushko", email = "roman.glushko.m@gmail.com"},
+]
+dependencies = [
+    "fastapi>=0.111.1",
+    "pyinstrument>=4.6.2",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "ruff>=0.5.5",
+    "mypy>=1.11.0",
+]

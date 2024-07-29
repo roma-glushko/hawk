@@ -1,0 +1,104 @@
+from __future__ import annotations
+
+import asyncio
+from typing import Sequence
+
+from starlette.applications import Request, Response
+from starlette.responses import StreamingResponse
+from starlette.routing import Router, BaseRoute, Middleware
+
+from src.hawk.profiling.memory import FormatType, profiler as mem_profiler
+
+
+async def profile_memory(request: Request) -> Response:
+    duration = int(request.query_params.get("duration", 5))
+    frames = int(request.query_params.get("frames", 30))
+    count = int(request.query_params.get("count", 10))
+    format = FormatType(request.query_params.get("format", FormatType.LINENO))
+    cumulative = request.query_params.get("cumulative", "false").lower() in ["true", "1"]
+
+    mem_profiler.start(frames=frames)
+
+    try:
+        heap_usage1, snapshot1 = mem_profiler.snapshot()
+        await asyncio.sleep(duration)
+        heap_usage2, snapshot2 = mem_profiler.snapshot()
+    finally:
+        mem_profiler.stop()
+
+    renderer = mem_profiler.get_renderer(format)
+
+    if format == FormatType.PICKLE:
+        return StreamingResponse(
+            content=renderer.render(snapshot2),
+            headers=renderer.headers()
+        )
+
+    return Response(
+        content=renderer.render(
+            snapshot2,
+            heap_usage2,
+            snapshot1,
+            heap_usage1,
+            count,
+            cumulative
+        ),
+        headers=renderer.headers(),
+    )
+
+async def start_manual_memory_profile(request: Request) -> Response:
+    frames = int(request.query_params.get("frames", 30))
+
+    mem_profiler.start(frames=frames)
+
+    return Response(content="Memory profiling started")
+
+async def snapshot_memory_manually(request: Request) -> Response:
+    count = int(request.query_params.get("count", 10))
+    format = FormatType(request.query_params.get("format", FormatType.LINENO))
+    cumulative = request.query_params.get("cumulative", "false").lower() in ["true", "1"]
+
+    heap_usage, snapshot = mem_profiler.snapshot()
+
+    renderer = mem_profiler.get_renderer(format)
+
+    if format == FormatType.PICKLE:
+        return StreamingResponse(
+            content=renderer.render(snapshot),
+            headers=renderer.headers()
+        )
+
+    return Response(
+        content=renderer.render(
+            snapshot,
+            heap_usage,
+            count,
+            cumulative
+        ),
+        headers=renderer.headers(),
+    )
+
+async def stop_manual_memory_profile(request: Request) -> Response:
+    mem_profiler.stop()
+
+    return Response(content="Memory profiling stopped")
+
+
+def get_router(
+    routes: Sequence[BaseRoute] | None = None,
+    redirect_slashes: bool = True,
+    *,
+    middleware: Sequence[Middleware] | None = None,
+) -> Router:
+    router = Router(
+        routes=routes,
+        redirect_slashes=redirect_slashes,
+        middleware=middleware,
+    )
+
+    router.add_route('/prof/mem/', profile_memory, methods=['GET'])
+    router.add_route('/prof/mem/start/', start_manual_memory_profile, methods=['GET'])
+    router.add_route('/prof/mem/snapshot/', snapshot_memory_manually, methods=['GET'])
+    router.add_route('/prof/mem/stop/', stop_manual_memory_profile, methods=['GET'])
+
+    return router

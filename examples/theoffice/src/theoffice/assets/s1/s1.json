@@ -1,0 +1,11 @@
+{
+  "id": "1",
+  "episodes": [
+    { "id": "1", "title": "Pilot" },
+    { "id": "2", "title": "Diversity Day" },
+    { "id": "3", "title": "Health Care" },
+    { "id": "4", "title": "The Alliance" },
+    { "id": "5", "title": "Basketball" },
+    { "id": "6", "title": "Hot Girl" }
+  ]
+}
