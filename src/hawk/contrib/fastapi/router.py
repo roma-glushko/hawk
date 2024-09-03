@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, Response
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
 
-from src.hawk.profiling.memory import FormatType, profiler as mem_profiler
+import src.hawk.profiling.memory as trmalloc
+import src.hawk.profiling.cpu.pyinstrument as pyinstr
 
 def get_router(
     prefix: str = "/debug",
@@ -27,23 +29,23 @@ def get_router(
         duration: int = 5,
         frames: int = 30,
         count: int = 10,
-        format: FormatType = FormatType.LINENO,
+        format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
         cumulative: bool = False
     ) -> Response:
         """
         """
-        mem_profiler.start(frames=frames)
+        trmalloc.profiler.start(frames=frames)
 
         try:
-            heap_usage1, snapshot1 = mem_profiler.snapshot()
+            heap_usage1, snapshot1 = trmalloc.profiler.snapshot()
             await asyncio.sleep(duration)
-            heap_usage2, snapshot2 = mem_profiler.snapshot()
+            heap_usage2, snapshot2 = trmalloc.profiler.snapshot()
         finally:
-            mem_profiler.stop()
+            trmalloc.profiler.stop()
 
-        renderer = mem_profiler.get_renderer(format)
+        renderer = trmalloc.profiler.get_renderer(format)
 
-        if format == FormatType.PICKLE:
+        if format == trmalloc.ProfileFormat.PICKLE:
             return StreamingResponse(
                 content=renderer.render(snapshot2),
                 headers=renderer.headers()
@@ -66,20 +68,20 @@ def get_router(
     async def start_manual_memory_profile(
         frames: int = 30,
     ) -> None:
-        mem_profiler.start(frames=frames)
+        trmalloc.profiler.start(frames=frames)
 
 
     @router.get("/prof/mem/snapshot/")
     async def snapshot_memory_manually(
         count: int = 10,
-        format: FormatType = FormatType.LINENO,
+        format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
         cumulative: bool = False,
     ) -> Response:
-        heap_usage, snapshot = mem_profiler.snapshot()
+        heap_usage, snapshot = trmalloc.profiler.snapshot()
 
-        renderer = mem_profiler.get_renderer(format)
+        renderer = trmalloc.profiler.get_renderer(format)
 
-        if format == FormatType.PICKLE:
+        if format == trmalloc.ProfileFormat.PICKLE:
             return StreamingResponse(
                 content=renderer.render(snapshot),
                 headers=renderer.headers()
@@ -98,6 +100,74 @@ def get_router(
 
     @router.get("/prof/mem/stop/")
     async def stop_manual_memory_profile() -> None:
-        mem_profiler.stop()
+        trmalloc.profiler.stop()
+
+    @router.get("/prof/cpu/")
+    async def profile_cpu(
+        duration: int = 5,
+        interval: float = 0.001,
+        async_mode: str = "enabled",
+        format: str = "html",
+    ) -> HTMLResponse | StreamingResponse:
+        pyinstr.profiler.start(interval=interval, async_mode=async_mode)
+        await asyncio.sleep(duration)
+        profiler = pyinstr.profiler.stop()
+
+        profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
+
+        extension = profile_type_to_ext[format]
+        renderer = pyinstr.profiler.get_renderer(format)
+
+        profile = profiler.output(renderer=renderer)
+
+        if format == "html":
+            return HTMLResponse(content=profile)
+
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
+
+        return StreamingResponse(
+            content=profile,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}",
+            },
+        )
+
+    @router.get("/prof/cpu/start/")
+    async def profile_cpu(
+        duration: int = 5,
+        interval: float = 0.001,
+        async_mode: str = "enabled",
+    ) -> None:
+        pyinstr.profiler.start(interval=interval, async_mode=async_mode)
+
+
+    @router.get("/prof/cpu/stop/")
+    async def profile_cpu(
+        format: str = "html",
+    ) -> HTMLResponse | StreamingResponse:
+        profiler = pyinstr.profiler.stop()
+
+        profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
+        renderer = pyinstr.profiler.get_renderer(format)
+
+        profile = profiler.output(renderer=renderer)
+
+        if format == "html":
+            return HTMLResponse(content=profile)
+
+        extension = profile_type_to_ext[format]
+
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
+
+        return StreamingResponse(
+            content=profile,
+            media_type="application/json",
+            headers={
+                "Content-Disposition": f"attachment; filename={file_name}",
+            },
+        )
 
     return router

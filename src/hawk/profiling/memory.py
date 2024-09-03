@@ -25,7 +25,7 @@ def format_bytes(value: int) -> str:
 AnyStats = Union[List[tracemalloc.Statistic], List[tracemalloc.StatisticDiff]]
 
 
-class FormatType(str, Enum):
+class ProfileFormat(str, Enum):
     LINENO = "lineno"
     TRACEBACK = "traceback"
     PICKLE = "pickle"
@@ -56,13 +56,13 @@ class Renderer(Protocol):
 
 class LinenoSnapshotRenderer:
     def render(
-            self,
-            snapshot: tracemalloc.Snapshot,
-            heap_usage_bytes: int,
-            initial_snapshot: tracemalloc.Snapshot | None = None,
-            initial_heap_usage_bytes: int | None = None,
-            count: int = 10,
-            cumulative: bool = False,
+        self,
+        snapshot: tracemalloc.Snapshot,
+        heap_usage_bytes: int,
+        initial_snapshot: tracemalloc.Snapshot | None = None,
+        initial_heap_usage_bytes: int | None = None,
+        count: int = 10,
+        cumulative: bool = False,
     ) -> dict[str, Any]:
         top_stats: AnyStats
 
@@ -228,15 +228,15 @@ class TracemallocProfiler:
         tracemalloc.stop()
 
 
-renderers: Dict[str, Union[Renderer, PickleSnapshotRenderer]] = {
-    FormatType.LINENO: LinenoSnapshotRenderer(),
-    FormatType.TRACEBACK: TracebackSnapshotRender(),
-    FormatType.PICKLE: PickleSnapshotRenderer(),
+PROFILE_RENDERERS: Dict[str, Union[Renderer, PickleSnapshotRenderer]] = {
+    ProfileFormat.LINENO: LinenoSnapshotRenderer(),
+    ProfileFormat.TRACEBACK: TracebackSnapshotRender(),
+    ProfileFormat.PICKLE: PickleSnapshotRenderer(),
 }
 
 
-def get_renderer(format: FormatType) -> Union[Renderer, PickleSnapshotRenderer]:
-    return renderers[format]
+def get_renderer(format: ProfileFormat) -> Union[Renderer, PickleSnapshotRenderer]:
+    return PROFILE_RENDERERS[format]
 
 
 profiler = TracemallocProfiler()
