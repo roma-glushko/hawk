@@ -64,7 +64,6 @@ def get_router(
             headers=renderer.headers(),
         )
 
-
     @router.get("/prof/mem/start/")
     async def start_manual_memory_trmalloc_profile(frames: int = 30) -> None:
         trmalloc.profiler.start(frames=frames)
@@ -99,76 +98,77 @@ def get_router(
     async def stop_manual_memory_profile() -> None:
         trmalloc.profiler.stop()
 
-    @router.get("/prof/cpu/")
-    async def profile_cpu_pyinst(
-        duration: int = 5,
-        interval: float = 0.001,
-        async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
-        use_timing_thread: bool | None = None,
-        format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
-    ) -> HTMLResponse | StreamingResponse:
-        pyinstr.profiler.start(interval=interval, use_timing_thread=use_timing_thread, async_mode=async_mode)
-        await asyncio.sleep(duration)
-        profiler = pyinstr.profiler.stop()
+    if pyinstr.PYINSTRUMENT_INSTALLED:
+        @router.get("/prof/cpu/pyinst/")
+        async def profile_cpu_pyinst(
+            duration: int = 5,
+            interval: float = 0.001,
+            async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
+            use_timing_thread: bool | None = None,
+            format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
+        ) -> HTMLResponse | StreamingResponse:
+            pyinstr.profiler.start(interval=interval, use_timing_thread=use_timing_thread, async_mode=async_mode)
+            await asyncio.sleep(duration)
+            profiler = pyinstr.profiler.stop()
 
-        profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
+            profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
 
-        extension = profile_type_to_ext[format]
-        renderer = pyinstr.profiler.get_renderer(format)
+            extension = profile_type_to_ext[format]
+            renderer = pyinstr.profiler.get_renderer(format)
 
-        profile = profiler.output(renderer=renderer)
+            profile = profiler.output(renderer=renderer)
 
-        if format == pyinstr.ProfileFormat.HTML:
-            return HTMLResponse(content=profile)
+            if format == pyinstr.ProfileFormat.HTML:
+                return HTMLResponse(content=profile)
 
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
 
-        return StreamingResponse(
-            content=profile,
-            media_type="application/json",
-            headers={
-                "Content-Disposition": f"attachment; filename={file_name}",
-            },
-        )
+            return StreamingResponse(
+                content=profile,
+                media_type="application/json",
+                headers={
+                    "Content-Disposition": f"attachment; filename={file_name}",
+                },
+            )
 
-    @router.get("/prof/cpu/start/")
-    async def start_manual_cpu_pyinst_profile(
-        interval: float = 0.001,
-        use_timing_thread: bool | None = None,
-        async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
-    ) -> None:
-        pyinstr.profiler.start(
-            interval=interval,
-            use_timing_thread=use_timing_thread,
-            async_mode=async_mode,
-        )
+        @router.get("/prof/cpu/pyinst/start/")
+        async def start_manual_cpu_pyinst_profile(
+            interval: float = 0.001,
+            use_timing_thread: bool | None = None,
+            async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
+        ) -> None:
+            pyinstr.profiler.start(
+                interval=interval,
+                use_timing_thread=use_timing_thread,
+                async_mode=async_mode,
+            )
 
-    @router.get("/prof/cpu/stop/")
-    async def stop_manual_cpu_pyinst_profile(
-        format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
-    ) -> HTMLResponse | StreamingResponse:
-        profiler = pyinstr.profiler.stop()
+        @router.get("/prof/cpu/pyinst/stop/")
+        async def stop_manual_cpu_pyinst_profile(
+            format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
+        ) -> HTMLResponse | StreamingResponse:
+            profiler = pyinstr.profiler.stop()
 
-        profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
-        renderer = pyinstr.profiler.get_renderer(format)
+            profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
+            renderer = pyinstr.profiler.get_renderer(format)
 
-        profile = profiler.output(renderer=renderer)
+            profile = profiler.output(renderer=renderer)
 
-        if format == pyinstr.ProfileFormat.HTML:
-            return HTMLResponse(content=profile)
+            if format == pyinstr.ProfileFormat.HTML:
+                return HTMLResponse(content=profile)
 
-        extension = profile_type_to_ext[format]
+            extension = profile_type_to_ext[format]
 
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
+            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
 
-        return StreamingResponse(
-            content=profile,
-            media_type="application/json",
-            headers={
-                "Content-Disposition": f"attachment; filename={file_name}",
-            },
-        )
+            return StreamingResponse(
+                content=profile,
+                media_type="application/json",
+                headers={
+                    "Content-Disposition": f"attachment; filename={file_name}",
+                },
+            )
 
     return router
