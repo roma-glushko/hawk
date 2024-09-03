@@ -19,19 +19,25 @@ class ProfileFormat(StrEnum):
     SPEEDSCOPE = "speedscope"
 
 
+class AsyncModes(StrEnum):
+    ENABLED = "enabled"
+    DISABLED = "disabled"
+    STRICT = "strict"
+
+
 class PyInstrumentProfiler:
     def __init__(self) -> None:
         self._profiler_lock = Lock()
         self._curr_profiler: "Profiler" | None = None
 
-    def start(self, interval: float = 0.001, async_mode: bool = True) -> "Profiler":
+    def start(self, interval: float = 0.001, use_timing_thread: bool | None = None, async_mode: AsyncModes = AsyncModes.ENABLED) -> "Profiler":
         if self._curr_profiler:
             # TODO: raise error
             ...
 
         with self._profiler_lock:
             # https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-a-web-request-in-fastapi
-            profiler = Profiler(interval=interval, async_mode=async_mode)
+            profiler = Profiler(interval=interval, use_timing_thread=use_timing_thread, async_mode=async_mode)
             profiler.start()
             self._curr_profiler = profiler
 

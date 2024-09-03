@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from datetime import datetime
-from typing import List
+from enum import Enum
 
 from fastapi import APIRouter, Response
 from fastapi.responses import StreamingResponse, HTMLResponse
@@ -10,10 +10,11 @@ from fastapi.responses import StreamingResponse, HTMLResponse
 import src.hawk.profiling.memory as trmalloc
 import src.hawk.profiling.cpu.pyinstrument as pyinstr
 
+
 def get_router(
     prefix: str = "/debug",
-    tags: List[str] | None = ("debug",),
-    include_in_schema: bool = True,
+    tags: list[str | Enum] | None = ("debug",),
+    include_in_schema: bool = False,
 ) -> APIRouter:
     """
     Create a new FastAPI router with all debugging endpoints
@@ -25,7 +26,7 @@ def get_router(
     )
 
     @router.get("/prof/mem/")
-    async def profile_memory(
+    async def profile_memory_trmalloc(
         duration: int = 5,
         frames: int = 30,
         count: int = 10,
@@ -65,14 +66,11 @@ def get_router(
 
 
     @router.get("/prof/mem/start/")
-    async def start_manual_memory_profile(
-        frames: int = 30,
-    ) -> None:
+    async def start_manual_memory_trmalloc_profile(frames: int = 30) -> None:
         trmalloc.profiler.start(frames=frames)
 
-
     @router.get("/prof/mem/snapshot/")
-    async def snapshot_memory_manually(
+    async def snapshot_memory_trmalloc_manually(
         count: int = 10,
         format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
         cumulative: bool = False,
@@ -97,19 +95,19 @@ def get_router(
             headers=renderer.headers(),
         )
 
-
     @router.get("/prof/mem/stop/")
     async def stop_manual_memory_profile() -> None:
         trmalloc.profiler.stop()
 
     @router.get("/prof/cpu/")
-    async def profile_cpu(
+    async def profile_cpu_pyinst(
         duration: int = 5,
         interval: float = 0.001,
-        async_mode: str = "enabled",
-        format: str = "html",
+        async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
+        use_timing_thread: bool | None = None,
+        format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
     ) -> HTMLResponse | StreamingResponse:
-        pyinstr.profiler.start(interval=interval, async_mode=async_mode)
+        pyinstr.profiler.start(interval=interval, use_timing_thread=use_timing_thread, async_mode=async_mode)
         await asyncio.sleep(duration)
         profiler = pyinstr.profiler.stop()
 
@@ -120,7 +118,7 @@ def get_router(
 
         profile = profiler.output(renderer=renderer)
 
-        if format == "html":
+        if format == pyinstr.ProfileFormat.HTML:
             return HTMLResponse(content=profile)
 
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -135,17 +133,20 @@ def get_router(
         )
 
     @router.get("/prof/cpu/start/")
-    async def profile_cpu(
-        duration: int = 5,
+    async def start_manual_cpu_pyinst_profile(
         interval: float = 0.001,
-        async_mode: str = "enabled",
+        use_timing_thread: bool | None = None,
+        async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
     ) -> None:
-        pyinstr.profiler.start(interval=interval, async_mode=async_mode)
-
+        pyinstr.profiler.start(
+            interval=interval,
+            use_timing_thread=use_timing_thread,
+            async_mode=async_mode,
+        )
 
     @router.get("/prof/cpu/stop/")
-    async def profile_cpu(
-        format: str = "html",
+    async def stop_manual_cpu_pyinst_profile(
+        format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
     ) -> HTMLResponse | StreamingResponse:
         profiler = pyinstr.profiler.stop()
 
@@ -154,7 +155,7 @@ def get_router(
 
         profile = profiler.output(renderer=renderer)
 
-        if format == "html":
+        if format == pyinstr.ProfileFormat.HTML:
             return HTMLResponse(content=profile)
 
         extension = profile_type_to_ext[format]
