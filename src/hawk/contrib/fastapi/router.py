@@ -1,3 +1,16 @@
+# Copyright (c) 2024 Roman Hlushko and various contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from __future__ import annotations
 
 import asyncio
@@ -25,7 +38,7 @@ def get_router(
         include_in_schema=include_in_schema,
     )
 
-    @router.get("/prof/mem/")
+    @router.get("/prof/mem/tracemalloc/")
     async def profile_memory_trmalloc(
         duration: int = 5,
         frames: int = 30,
@@ -64,11 +77,11 @@ def get_router(
             headers=renderer.headers(),
         )
 
-    @router.get("/prof/mem/start/")
+    @router.get("/prof/mem/tracemalloc/start/")
     async def start_manual_memory_trmalloc_profile(frames: int = 30) -> None:
         trmalloc.profiler.start(frames=frames)
 
-    @router.get("/prof/mem/snapshot/")
+    @router.get("/prof/mem/tracemalloc/snapshot/")
     async def snapshot_memory_trmalloc_manually(
         count: int = 10,
         format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
@@ -94,7 +107,7 @@ def get_router(
             headers=renderer.headers(),
         )
 
-    @router.get("/prof/mem/stop/")
+    @router.get("/prof/mem/tracemalloc/stop/")
     async def stop_manual_memory_profile() -> None:
         trmalloc.profiler.stop()
 
