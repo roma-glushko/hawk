@@ -11,83 +11,54 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-import time
-from typing import Optional
+from __future__ import annotations
 
-from starlette.routing import Router
+from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
+from starlette.responses import Response
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
-import cProfile
-import pstats
 
 
-class DebugMiddleware:
+class DebugMiddleware(BaseHTTPMiddleware):
     def __init__(
         self,
         app: ASGIApp,
-        server_app: Optional[Router] = None,
-        enable : bool = True,
-        sort_by : str = 'cumulative',
-        print_each_request : bool = False,
-        filename : str = None,
-        strip_dirs : bool = False
+        enabled: bool = True,
+        static_debug_token: str | None = None,
     ):
-        self.app = app
-        self.enable = enable
-        self._server_app = server_app
+        super().__init__(app)
 
-        if enable:
-            self._profiler = cProfile.Profile()
-            self._sort_by = sort_by
-            self._print_each_request = print_each_request
-            self._filename = filename
-            self._strip_dirs = strip_dirs
+        self._enabled = enabled
+        self._static_debug_token = static_debug_token
 
+    async def dispatch(self, request: Request, call_next: RequestResponseEndpoint) -> Response:
+        if not self._enabled:
+            return await call_next(request)
 
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http" or self.enable is False:
-            await self.app(scope, receive, send)
-            return
+        debug_enabled = request.get("debug") or False # bool or str
 
-        if self._server_app is not None:
-            self._server_app.add_event_handler("shutdown", self.get_profiler_result)
+        if not debug_enabled:
+            # ignore the request if debug is disabled
+            return await call_next(request)
 
-        self._profiler.enable()
+        if self._static_debug_token and self._static_debug_token != debug_enabled:
+            # ignore the request if token was set but it's provided invalid
+            # TODO: consider logging
+            return await call_next(request)
 
-        request = Request(scope, receive=receive)
-        method = request.method
-        path = request.url.path
-        begin = time.perf_counter()
+        profiler = request.get("profiler")
 
-        # Default status code used when the application does not return a valid response
-        # or an unhandled exception occurs.
-        status_code = 500
+        if profiler is None:
+            # ignore the request if profiler is not set, don't play guessing game
+            # TODO: consider logging
+            return await call_next(request)
 
-        async def wrapped_send(message: Message) -> None:
-            if message['type'] == 'http.response.start':
-                nonlocal status_code
-                status_code = message['status']
-            await send(message)
+        # TODO: get the profile, validate params and start profiling
 
         try:
-            await self.app(scope, receive, wrapped_send)
+            response = await call_next(request)
         finally:
-            if self._print_each_request:
-                self._profiler.disable()
-                end = time.perf_counter()
-                print(f"Method: {method} ", f"Path: {path} ", f"Duration: {end - begin} ", f"Status: {status_code}")
-                ps = pstats.Stats(self._profiler).sort_stats(self._sort_by)
-                if self._strip_dirs:
-                    ps.strip_dirs()
-                ps.print_stats()
+            # TODO: finalize profiling and return the profile as a response
+            ...
 
-
-    async def get_profiler_result(self):
-        self._profiler.disable()
-        ps = pstats.Stats(self._profiler).sort_stats(self._sort_by)
-        if self._strip_dirs:
-            ps.strip_dirs()
-        if self._filename:
-            ps.dump_stats(self._filename)
-
-
+        return response

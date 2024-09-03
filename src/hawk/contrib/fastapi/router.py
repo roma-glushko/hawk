@@ -39,7 +39,7 @@ def get_router(
     )
 
     @router.get("/prof/mem/tracemalloc/")
-    async def profile_memory_trmalloc(
+    async def profile_memory_tracemalloc(
         duration: int = 5,
         frames: int = 30,
         count: int = 10,
@@ -78,11 +78,11 @@ def get_router(
         )
 
     @router.get("/prof/mem/tracemalloc/start/")
-    async def start_manual_memory_trmalloc_profile(frames: int = 30) -> None:
+    async def start_manual_memory_tracemalloc_profile(frames: int = 30) -> None:
         trmalloc.profiler.start(frames=frames)
 
     @router.get("/prof/mem/tracemalloc/snapshot/")
-    async def snapshot_memory_trmalloc_manually(
+    async def snapshot_memory_tracemalloc_manually(
         count: int = 10,
         format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
         cumulative: bool = False,
@@ -108,11 +108,11 @@ def get_router(
         )
 
     @router.get("/prof/mem/tracemalloc/stop/")
-    async def stop_manual_memory_profile() -> None:
+    async def stop_manual_memory_tracemalloc_profile() -> None:
         trmalloc.profiler.stop()
 
     if pyinstr.PYINSTRUMENT_INSTALLED:
-        @router.get("/prof/cpu/pyinst/")
+        @router.get("/prof/cpu/pyinstrument/")
         async def profile_cpu_pyinst(
             duration: int = 5,
             interval: float = 0.001,
@@ -145,7 +145,7 @@ def get_router(
                 },
             )
 
-        @router.get("/prof/cpu/pyinst/start/")
+        @router.get("/prof/cpu/pyinstrument/start/")
         async def start_manual_cpu_pyinst_profile(
             interval: float = 0.001,
             use_timing_thread: bool | None = None,
@@ -157,7 +157,7 @@ def get_router(
                 async_mode=async_mode,
             )
 
-        @router.get("/prof/cpu/pyinst/stop/")
+        @router.get("/prof/cpu/pyinstrument/stop/")
         async def stop_manual_cpu_pyinst_profile(
             format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
         ) -> HTMLResponse | StreamingResponse:
