@@ -120,7 +120,7 @@ class JSONRenderer:
     def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        return f"hwk_cpu_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
     def render(self, profiler: Profiler) -> str:
         return profiler.output(renderer=self._renderer)
@@ -135,7 +135,7 @@ class HTMLRenderer:
     def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        return f"hwk_cpu_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
     def render(self, profiler: Profiler) -> str:
         return profiler.output(renderer=self._renderer)
@@ -150,7 +150,7 @@ class SpeedscopeRenderer:
     def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
-        return f"hwk_cpu_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
     def render(self, profiler: Profiler) -> str:
         return profiler.output(renderer=self._renderer)
@@ -164,7 +164,10 @@ PROFILE_RENDERERS: dict[ProfileFormat, Renderer] = {
 
 
 def get_renderer(format: ProfileFormat) -> Renderer:
-    return PROFILE_RENDERERS[format]
+    try:
+        return PROFILE_RENDERERS[format]
+    except KeyError:
+        raise ValueError(f"Invalid profile format: {format} (formats: {', '.join(PROFILE_RENDERERS)})")
 
 
 profiler = PyInstrumentProfiler()

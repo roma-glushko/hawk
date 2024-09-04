@@ -16,7 +16,7 @@ from __future__ import annotations
 import asyncio
 from enum import Enum
 
-import src.hawk.profiling.memory as trmalloc
+import src.hawk.profiling.mem.tracemalloc as trmalloc
 import src.hawk.profiling.cpu.pyinstrument as pyinstr
 
 try:
@@ -50,69 +50,71 @@ def get_router(
     async def profile_memory_tracemalloc(
         duration: int = 5,
         frames: int = 30,
-        count: int = 10,
         format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
+        count: int = 10,
         cumulative: bool = False
     ) -> Response:
         """
         """
-        trmalloc.profiler.start(frames=frames)
+        opt = trmalloc.ProfileOptions(frames=frames)
 
-        try:
-            heap_usage1, snapshot1 = trmalloc.profiler.snapshot()
+        with trmalloc.profiler.profile(opt) as profile:
             await asyncio.sleep(duration)
-            heap_usage2, snapshot2 = trmalloc.profiler.snapshot()
-        finally:
-            trmalloc.profiler.stop()
 
+        render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
 
         if format == trmalloc.ProfileFormat.PICKLE:
+            file_name = renderer.get_file_name()
+
             return StreamingResponse(
-                content=renderer.render(snapshot2),
-                headers=renderer.headers()
+                content=renderer.render(profile, render_opt),
+                headers={
+                    "Content-Type": "application/octet-stream",
+                    "Content-Disposition": f"attachment; filename={file_name}"
+                }
             )
 
         return Response(
-            content=renderer.render(
-                snapshot2,
-                heap_usage2,
-                snapshot1,
-                heap_usage1,
-                count,
-                cumulative
-            ),
-            headers=renderer.headers(),
+            headers={
+                "Content-Type": "application/json",
+            },
+            content=renderer.render(profile, render_opt),
         )
 
     @router.get("/prof/mem/tracemalloc/start/")
     async def start_manual_memory_tracemalloc_profile(frames: int = 30) -> None:
-        trmalloc.profiler.start(frames=frames)
+        opt = trmalloc.ProfileOptions(frames=frames)
+
+        trmalloc.profiler.start(opt)
 
     @router.get("/prof/mem/tracemalloc/snapshot/")
     async def snapshot_memory_tracemalloc_manually(
-        count: int = 10,
         format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
+        count: int = 10,
         cumulative: bool = False,
     ) -> Response:
-        heap_usage, snapshot = trmalloc.profiler.snapshot()
+        profile = trmalloc.profiler.snapshot()
 
+        opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
 
         if format == trmalloc.ProfileFormat.PICKLE:
+            file_name = renderer.get_file_name()
+
             return StreamingResponse(
-                content=renderer.render(snapshot),
-                headers=renderer.headers()
+                content=renderer.render(profile, opt),
+                headers={
+                    "Content-Type": "application/octet-stream",
+                    "Content-Disposition": f"attachment; filename={file_name}"
+                }
             )
 
         return Response(
-            content=renderer.render(
-                snapshot,
-                heap_usage,
-                count,
-                cumulative
-            ),
-            headers=renderer.headers(),
+            headers={
+                "Content-Type": "application/json",
+            },
+            content=renderer.render(profile, opt),
         )
 
     @router.get("/prof/mem/tracemalloc/stop/")
