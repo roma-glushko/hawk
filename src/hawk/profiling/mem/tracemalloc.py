@@ -25,6 +25,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Iterator, TypedDict, List, Union, Protocol, Generator
 
+from src.hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+
 
 def format_bytes(value: int) -> str:
     formatted_value = float(value)
@@ -70,7 +72,7 @@ class IntervalProfileProxy:
 
     def get(self) -> IntervalProfile:
         if self.stop_profile is None:
-            raise ValueError("Stop profile is not set")
+            raise RuntimeError("Stop profile is not set")
 
         if self._interval_profile is not None:
             return self._interval_profile
@@ -133,8 +135,11 @@ class TracemallocProfiler:
         Start tracing memory allocations
         """
         if tracemalloc.is_tracing():
-            # Tracing has already started
-            ...
+            raise ProfilingAlreadyStarted(
+                "Profiler is already started via environment variable PYTHONTRACEMALLOC"
+                if self._tracemalloc_enabled_in_env
+                else "Profiler is already started",
+            )
 
         if opt.gc:
             gc.collect()
@@ -146,7 +151,7 @@ class TracemallocProfiler:
         Take a snapshot of the current memory allocations
         """
         if not tracemalloc.is_tracing():
-            ...
+            raise ProfilingNotStarted("Profiler is not started yet")
 
         heap_usage, _ = tracemalloc.get_traced_memory()
 
@@ -160,7 +165,7 @@ class TracemallocProfiler:
         Stop tracing memory allocations
         """
         if not tracemalloc.is_tracing():
-            ...
+            raise ProfilingNotStarted("Profiler is not started yet")
 
         tracemalloc.stop()
 
