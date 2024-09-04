@@ -13,29 +13,38 @@
 # limitations under the License.
 from __future__ import annotations
 
-from enum import StrEnum
+from contextlib import contextmanager
+from datetime import datetime
+from enum import Enum
 from threading import Lock
-from typing import Type
+from dataclasses import dataclass
+from typing import Protocol, Generator
 
 PYINSTRUMENT_INSTALLED: bool = True
 
 try:
     from pyinstrument import Profiler
-    from pyinstrument.renderers import JSONRenderer, HTMLRenderer, SpeedscopeRenderer
+    from pyinstrument import renderers as pyinstr_renderers
 except ImportError:
     PYINSTRUMENT_INSTALLED = False
 
 
-class ProfileFormat(StrEnum):
+class ProfileFormat(str, Enum):
     HTML = "html"
     JSON = "json"
     SPEEDSCOPE = "speedscope"
 
 
-class AsyncModes(StrEnum):
+class AsyncModes(str, Enum):
     ENABLED = "enabled"
     DISABLED = "disabled"
     STRICT = "strict"
+
+@dataclass
+class ProfileOptions:
+    interval: float = 0.001
+    use_timing_thread: bool | None = None
+    async_mode: AsyncModes = AsyncModes.ENABLED
 
 
 class PyInstrumentProfiler:
@@ -43,21 +52,38 @@ class PyInstrumentProfiler:
         self._profiler_lock = Lock()
         self._curr_profiler: "Profiler" | None = None
 
-    def start(self, interval: float = 0.001, use_timing_thread: bool | None = None, async_mode: AsyncModes = AsyncModes.ENABLED) -> "Profiler":
+    @property
+    def is_profiling(self) -> bool:
+        return bool(self._curr_profiler)
+
+    @contextmanager
+    def profile(self, config: ProfileOptions) -> Generator["Profiler"]:
+        profiler = self.start(config)
+
+        try:
+            yield profiler
+        finally:
+            self.stop()
+
+    def start(
+        self,
+        config: ProfileOptions,
+    ) -> "Profiler":
         if self._curr_profiler:
             # TODO: raise error
             ...
 
         with self._profiler_lock:
             # https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-a-web-request-in-fastapi
-            profiler = Profiler(interval=interval, use_timing_thread=use_timing_thread, async_mode=async_mode)
+            profiler = Profiler(
+                interval=config.interval,
+                use_timing_thread=config.use_timing_thread,
+                async_mode=config.async_mode,
+            )
             profiler.start()
             self._curr_profiler = profiler
 
         return self._curr_profiler
-
-    def is_profiling(self) -> bool:
-        return bool(self._curr_profiler)
 
     def stop(self) -> "Profiler":
         if not self._curr_profiler:
@@ -75,14 +101,69 @@ class PyInstrumentProfiler:
         return profiler
 
 
-PROFILE_RENDERERS = {
-    ProfileFormat.JSON: JSONRenderer,
-    ProfileFormat.HTML: HTMLRenderer,
-    ProfileFormat.SPEEDSCOPE: SpeedscopeRenderer,
+class Renderer(Protocol):
+    file_ext: str
+
+    def get_filename(self) -> str:
+        ...
+
+    def render(self, profiler: Profiler) -> str:
+        ...
+
+
+class JSONRenderer:
+    file_ext: str = "json"
+
+    def __init__(self):
+        self._renderer = pyinstr_renderers.JSONRenderer()
+
+    def get_filename(self) -> str:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        return f"hwk_cpu_profile_{timestamp}.{self.file_ext}"
+
+    def render(self, profiler: Profiler) -> str:
+        return profiler.output(renderer=self._renderer)
+
+
+class HTMLRenderer:
+    file_ext: str = "html"
+
+    def __init__(self):
+        self._renderer = pyinstr_renderers.HTMLRenderer()
+
+    def get_filename(self) -> str:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        return f"hwk_cpu_profile_{timestamp}.{self.file_ext}"
+
+    def render(self, profiler: Profiler) -> str:
+        return profiler.output(renderer=self._renderer)
+
+
+class SpeedscopeRenderer:
+    file_ext: str = "speedscope.json"
+
+    def __init__(self):
+        self._renderer = pyinstr_renderers.SpeedscopeRenderer()
+
+    def get_filename(self) -> str:
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+        return f"hwk_cpu_profile_{timestamp}.{self.file_ext}"
+
+    def render(self, profiler: Profiler) -> str:
+        return profiler.output(renderer=self._renderer)
+
+
+PROFILE_RENDERERS: dict[ProfileFormat, Renderer] = {
+    ProfileFormat.JSON: JSONRenderer(),
+    ProfileFormat.HTML: HTMLRenderer(),
+    ProfileFormat.SPEEDSCOPE: SpeedscopeRenderer(),
 }
 
 
-def get_renderer(format: ProfileFormat) -> Type[JSONRenderer | HTMLRenderer | SpeedscopeRenderer]:
+def get_renderer(format: ProfileFormat) -> Renderer:
     return PROFILE_RENDERERS[format]
 
 

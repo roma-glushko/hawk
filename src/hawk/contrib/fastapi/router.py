@@ -14,24 +14,32 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime
 from enum import Enum
-
-from fastapi import APIRouter, Response
-from fastapi.responses import StreamingResponse, HTMLResponse
 
 import src.hawk.profiling.memory as trmalloc
 import src.hawk.profiling.cpu.pyinstrument as pyinstr
 
+try:
+    from fastapi import APIRouter, Response
+    from fastapi.responses import StreamingResponse, HTMLResponse
+except ImportError as e:
+    raise ImportError(
+        "FastAPI is required to use the hawk.contrib.fastapi packages. "
+        "Please install it using 'pip install fastapi'."
+    ) from e
+
 
 def get_router(
     prefix: str = "/debug",
-    tags: list[str | Enum] | None = ("debug",),
+    tags: list[str | Enum] | None = None,
     include_in_schema: bool = False,
 ) -> APIRouter:
     """
     Create a new FastAPI router with all debugging endpoints
     """
+    if tags is None:
+        tags = ["debug"]
+
     router = APIRouter(
         prefix=prefix,
         tags=tags,
@@ -57,7 +65,7 @@ def get_router(
         finally:
             trmalloc.profiler.stop()
 
-        renderer = trmalloc.profiler.get_renderer(format)
+        renderer = trmalloc.get_renderer(format)
 
         if format == trmalloc.ProfileFormat.PICKLE:
             return StreamingResponse(
@@ -89,7 +97,7 @@ def get_router(
     ) -> Response:
         heap_usage, snapshot = trmalloc.profiler.snapshot()
 
-        renderer = trmalloc.profiler.get_renderer(format)
+        renderer = trmalloc.get_renderer(format)
 
         if format == trmalloc.ProfileFormat.PICKLE:
             return StreamingResponse(
@@ -120,28 +128,28 @@ def get_router(
             use_timing_thread: bool | None = None,
             format: pyinstr.ProfileFormat = pyinstr.ProfileFormat.HTML,
         ) -> HTMLResponse | StreamingResponse:
-            pyinstr.profiler.start(interval=interval, use_timing_thread=use_timing_thread, async_mode=async_mode)
-            await asyncio.sleep(duration)
-            profiler = pyinstr.profiler.stop()
+            opt = pyinstr.ProfileOptions(
+                interval=interval,
+                use_timing_thread=use_timing_thread,
+                async_mode=async_mode,
+            )
 
-            profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
+            with pyinstr.profiler.profile(opt) as profiler:
+                await asyncio.sleep(duration)
 
-            extension = profile_type_to_ext[format]
-            renderer = pyinstr.profiler.get_renderer(format)
+            renderer = pyinstr.get_renderer(format)
 
-            profile = profiler.output(renderer=renderer)
+            filename = renderer.get_filename()
+            profile = renderer.render(profiler)
 
             if format == pyinstr.ProfileFormat.HTML:
                 return HTMLResponse(content=profile)
-
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
 
             return StreamingResponse(
                 content=profile,
                 media_type="application/json",
                 headers={
-                    "Content-Disposition": f"attachment; filename={file_name}",
+                    "Content-Disposition": f"attachment; filename={filename}",
                 },
             )
 
@@ -151,11 +159,13 @@ def get_router(
             use_timing_thread: bool | None = None,
             async_mode: pyinstr.AsyncModes = pyinstr.AsyncModes.ENABLED,
         ) -> None:
-            pyinstr.profiler.start(
+            opt = pyinstr.ProfileOptions(
                 interval=interval,
                 use_timing_thread=use_timing_thread,
                 async_mode=async_mode,
             )
+
+            pyinstr.profiler.start(opt)
 
         @router.get("/prof/cpu/pyinstrument/stop/")
         async def stop_manual_cpu_pyinst_profile(
@@ -163,24 +173,19 @@ def get_router(
         ) -> HTMLResponse | StreamingResponse:
             profiler = pyinstr.profiler.stop()
 
-            profile_type_to_ext = {"json": "json", "html": "html", "speedscope": "speedscope.json"}
-            renderer = pyinstr.profiler.get_renderer(format)
+            renderer = pyinstr.get_renderer(format)
 
-            profile = profiler.output(renderer=renderer)
+            filename = renderer.get_filename()
+            profile = renderer.render(profiler)
 
             if format == pyinstr.ProfileFormat.HTML:
                 return HTMLResponse(content=profile)
-
-            extension = profile_type_to_ext[format]
-
-            timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            file_name = f"hwk_cpu_profile_{timestamp}.{extension}"
 
             return StreamingResponse(
                 content=profile,
                 media_type="application/json",
                 headers={
-                    "Content-Disposition": f"attachment; filename={file_name}",
+                    "Content-Disposition": f"attachment; filename={filename}",
                 },
             )
 
