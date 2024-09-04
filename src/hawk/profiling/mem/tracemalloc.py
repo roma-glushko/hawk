@@ -13,6 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+import gc
 import io
 import linecache
 import os
@@ -48,6 +49,7 @@ class ProfileFormat(str, Enum):
 
 @dataclass
 class ProfileOptions:
+    gc: bool = True
     frames: int = 30
 
 
@@ -133,6 +135,9 @@ class TracemallocProfiler:
         if tracemalloc.is_tracing():
             # Tracing has already started
             ...
+
+        if opt.gc:
+            gc.collect()
 
         tracemalloc.start(opt.frames)
 

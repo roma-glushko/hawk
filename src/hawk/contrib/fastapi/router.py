@@ -50,13 +50,14 @@ def get_router(
     async def profile_memory_tracemalloc(
         duration: int = 5,
         frames: int = 30,
+        gc: bool = True,
         format: trmalloc.ProfileFormat = trmalloc.ProfileFormat.LINENO,
         count: int = 10,
         cumulative: bool = False
     ) -> Response:
         """
         """
-        opt = trmalloc.ProfileOptions(frames=frames)
+        opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
 
         with trmalloc.profiler.profile(opt) as profile:
             await asyncio.sleep(duration)
@@ -83,8 +84,8 @@ def get_router(
         )
 
     @router.get("/prof/mem/tracemalloc/start/")
-    async def start_manual_memory_tracemalloc_profile(frames: int = 30) -> None:
-        opt = trmalloc.ProfileOptions(frames=frames)
+    async def start_manual_memory_tracemalloc_profile(frames: int = 30, gc: bool = True) -> None:
+        opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
 
         trmalloc.profiler.start(opt)
 
