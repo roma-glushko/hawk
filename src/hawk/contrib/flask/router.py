@@ -1,10 +1,23 @@
+# Copyright (c) 2024 Roman Hlushko and various contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 from __future__ import annotations
 
 import time
 
 from flask import Blueprint, request, Response
 
-from src.hawk.profiling.memory import FormatType, profiler as mem_profiler
+from src.hawk.profiling.mem.tracemalloc import ProfileFormat, profiler as mem_profiler
 
 
 def create_debug_blueprint(
@@ -24,7 +37,7 @@ def create_debug_blueprint(
         duration = int(request.args.get("duration", 5))
         frames = int(request.args.get("frames", 30))
         count = int(request.args.get("count", 10))
-        format = FormatType(request.args.get("format", FormatType.LINENO))
+        format = ProfileFormat(request.args.get("format", ProfileFormat.LINENO))
         cumulative = request.args.get("cumulative", "false").lower() in ("true", "1")
 
         mem_profiler.start(frames=frames)
@@ -38,7 +51,7 @@ def create_debug_blueprint(
 
         renderer = mem_profiler.get_renderer(format)
 
-        if format == FormatType.PICKLE:
+        if format == ProfileFormat.PICKLE:
             return Response(
                 renderer.render(snapshot2),
                 headers=renderer.headers(),
@@ -68,14 +81,14 @@ def create_debug_blueprint(
     @bp.route('/prof/mem/snapshot/', methods=['GET'])
     def snapshot_memory_manually():
         count = int(request.args.get("count", 10))
-        format = FormatType(request.args.get("format", FormatType.LINENO))
+        format = ProfileFormat(request.args.get("format", ProfileFormat.LINENO))
         cumulative = request.args.get("cumulative", "false").lower() in ["true", "1"]
 
         heap_usage, snapshot = mem_profiler.snapshot()
 
         renderer = mem_profiler.get_renderer(format)
 
-        if format == FormatType.PICKLE:
+        if format == ProfileFormat.PICKLE:
             return Response(
                 renderer.render(snapshot),
                 headers=renderer.headers(),
