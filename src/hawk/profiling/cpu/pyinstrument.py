@@ -72,7 +72,7 @@ class PyInstrumentProfiler:
         config: ProfileOptions,
     ) -> "Profiler":
         if self._curr_profiler:
-            raise ProfilingAlreadyStarted("Profiler is already started yet")
+            raise ProfilingAlreadyStarted("Profiler is already started")
 
         with self._profiler_lock:
             # https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-a-web-request-in-fastapi
@@ -88,11 +88,11 @@ class PyInstrumentProfiler:
 
     def stop(self) -> "Profiler":
         if not self._curr_profiler:
-            raise ProfilingNotStarted("Profiler was not started yet")
+            raise ProfilingNotStarted("Profiler is not started yet")
 
         with self._profiler_lock:
             if not self._curr_profiler:
-                raise ProfilingNotStarted("Profiler was not started yet")
+                raise ProfilingNotStarted("Profiler is not started yet")
 
             self._curr_profiler.stop()
             profiler, self._curr_profiler = self._curr_profiler, None
