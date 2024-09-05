@@ -15,30 +15,38 @@ from __future__ import annotations
 
 import contextlib
 from enum import Enum
-from typing import Protocol
+from typing import Protocol, Generator, Type, Mapping
 
 from src.hawk.profiling.renderers import RenderedProfile
+from src.hawk.profiling.mem import tracemalloc
+from src.hawk.profiling.cpu import pyinstrument
 
 
-class Profiler(str, Enum):
+class ProfilerType(str, Enum):
     TRACEMALLOC = "tracemalloc"
     PYINSTRUMENT = "pyinstrument"
 
 
 class ProfileHandler(Protocol):
+    def __init__(self, query_params: Mapping[str, str]) -> None:
+        ...
+
     @contextlib.contextmanager
-    def profile(self) -> RenderedProfile:
+    def profile(self) -> Generator[None, None, None]:
+        ...
+
+    def render_profile(self) -> RenderedProfile:
         ...
 
 
-PROFILERS: dict[str, ProfileHandler] = {
-    Profiler.TRACEMALLOC: None,
-    Profiler.PYINSTRUMENT: None,
+PROFILERS: dict[ProfilerType, Type[ProfileHandler]] = {
+    ProfilerType.TRACEMALLOC: tracemalloc.ProfileHandler,
+    ProfilerType.PYINSTRUMENT: pyinstrument.ProfileHandler,
 }
 
 
-def get_profiler(profiler: str) -> ProfileHandler:
+def get_profiler(profiler: ProfilerType) -> Type[ProfileHandler]:
     try:
-        return PROFILERS.get(profiler)
+        return PROFILERS[profiler]
     except KeyError:
         raise ValueError(f"Profiler {profiler} is not supported (available: {', '.join(PROFILERS)})")

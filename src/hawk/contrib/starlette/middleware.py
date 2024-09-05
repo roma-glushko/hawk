@@ -19,7 +19,7 @@ from starlette.responses import Response
 from starlette.types import ASGIApp
 
 from src.hawk.contrib.starlette.response import format_response
-from src.hawk.profiling.profilers import get_profiler
+from src.hawk.profiling.profilers import get_profiler, ProfilerType
 
 
 class DebugMiddleware(BaseHTTPMiddleware):
@@ -59,9 +59,14 @@ class DebugMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
 
         # TODO: get the profile, validate params and start profiling
-        profiler = get_profiler(profiler_type)
+        profiler = get_profiler(ProfilerType(profiler_type))(query_params)
 
-        with profiler.profile(query_params) as profile:
-            _ = await call_next(request)
+        try:
+            with profiler.profile():
+                _ = await call_next(request)
+        except Exception:
+            ...
 
-        return format_response(profile)
+        rendered_profile = profiler.render_profile()
+
+        return format_response(rendered_profile)

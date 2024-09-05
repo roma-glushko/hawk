@@ -18,7 +18,7 @@ from datetime import datetime
 from enum import Enum
 from threading import Lock
 from dataclasses import dataclass
-from typing import Generator, Protocol
+from typing import Generator, Protocol, Mapping
 
 from src.hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
 from src.hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
@@ -49,6 +49,21 @@ class ProfileOptions:
     use_timing_thread: bool | None = None
     async_mode: AsyncModes = AsyncModes.ENABLED
 
+    @classmethod
+    def from_query_params(cls, query_params: Mapping[str, str]) -> ProfileOptions:
+        interval = float(query_params.get("interval", 0.001))
+        use_timing_thread = query_params.get("use_timing_thread", None)
+        async_mode = AsyncModes(query_params.get("async_mode", AsyncModes.ENABLED))
+
+        if use_timing_thread is not None:
+            use_timing_thread = use_timing_thread.lower() in {"true", "1", "yes"}
+
+        return ProfileOptions(
+            interval=interval,
+            use_timing_thread=use_timing_thread,
+            async_mode=async_mode,
+        )
+
 
 class PyInstrumentProfiler:
     def __init__(self) -> None:
@@ -60,8 +75,8 @@ class PyInstrumentProfiler:
         return bool(self._curr_profiler)
 
     @contextmanager
-    def profile(self, config: ProfileOptions) -> Generator["Profiler"]:
-        profiler = self.start(config)
+    def profile(self, opt: ProfileOptions) -> Generator["Profiler"]:
+        profiler = self.start(opt)
 
         try:
             yield profiler
@@ -70,7 +85,7 @@ class PyInstrumentProfiler:
 
     def start(
         self,
-        config: ProfileOptions,
+        opt: ProfileOptions,
     ) -> "Profiler":
         if self._curr_profiler:
             raise ProfilingAlreadyStarted("Profiler is already started")
@@ -78,9 +93,9 @@ class PyInstrumentProfiler:
         with self._profiler_lock:
             # https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-a-web-request-in-fastapi
             profiler = Profiler(
-                interval=config.interval,
-                use_timing_thread=config.use_timing_thread,
-                async_mode=config.async_mode,
+                interval=opt.interval,
+                use_timing_thread=opt.use_timing_thread,
+                async_mode=opt.async_mode,
             )
             profiler.start()
             self._curr_profiler = profiler
@@ -193,3 +208,25 @@ def get_renderer(format: ProfileFormat) -> Renderer:
 
 
 profiler = PyInstrumentProfiler()
+
+
+class ProfileHandler:
+    def __init__(self, query_params: Mapping[str, str]) -> None:
+        self._opt = ProfileOptions.from_query_params(query_params)
+        self._format = ProfileFormat(query_params.get("format", ProfileFormat.HTML))
+
+        self._profiler: Profiler | None = None
+
+    @contextmanager
+    def profile(self) -> Generator[None, None, None]:
+        with profiler.profile(self._opt) as p:
+            self._profiler = p
+            yield
+
+    def render_profile(self) -> RenderedProfile:
+        if not self._profiler:
+            raise ProfilingNotStarted("Profiler is not started yet")
+
+        renderer = get_renderer(self._format)
+
+        return renderer.render(self._profiler)

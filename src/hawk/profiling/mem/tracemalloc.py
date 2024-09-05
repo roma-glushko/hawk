@@ -55,6 +55,17 @@ class ProfileOptions:
     gc: bool = True
     frames: int = 30
 
+    def __post_init__(self):
+        if self.frames < 1:
+            raise ValueError("Frames should be greater than 0")
+
+    @classmethod
+    def from_query_params(cls, query_params: Mapping[str, str]) -> ProfileOptions:
+        return cls(
+            gc=query_params.get("gc", "1").lower() in {"1", "true", "yes"},
+            frames=int(query_params.get("frames", "30")),
+        )
+
 
 @dataclass
 class IntervalProfile:
@@ -101,6 +112,13 @@ class PointInTimeProfile:
 class RendererOptions:
     count: int = 10
     cumulative: bool = False
+
+    @classmethod
+    def from_query_params(cls, query_params: Mapping[str, str]) -> RendererOptions:
+        return cls(
+            count=int(query_params.get("count", "10")),
+            cumulative=query_params.get("cumulative", "0").lower() in {"1", "true", "yes"},
+        )
 
 
 class HeapUsage(TypedDict):
@@ -429,12 +447,28 @@ def get_renderer(format: ProfileFormat) -> Renderer:
         raise ValueError(f"Invalid profile format: {format} (formats: {', '.join(PROFILE_RENDERERS)})")
 
 
-class ProfileHandler:
-    def __init__(self, profiler: TracemallocProfiler):
-        self.profiler = profiler
-
-    def profile(self, query_params: Mapping[str, str]) -> RenderedProfile:
-        ...
-
-
 profiler = TracemallocProfiler()
+
+
+class ProfileHandler:
+    def __init__(self, query_params: Mapping[str, str]) -> None:
+        self._opt = ProfileOptions.from_query_params(query_params)
+        self._renderer_opt = RendererOptions.from_query_params(query_params)
+        self._format = ProfileFormat(query_params.get("format", ProfileFormat.LINENO))
+
+        self._interval_profile: IntervalProfileProxy | None = None
+
+    @contextmanager
+    def profile(self) -> Generator[None, None, None]:
+        with profiler.profile(self._opt) as profile_proxy:
+            self._interval_profile = profile_proxy
+            yield
+
+    def render_profile(self) -> RenderedProfile:
+        if self._interval_profile is None:
+            raise RuntimeError("Interval profile is not set")
+
+        return get_renderer(self._format).render(
+            self._interval_profile,
+            self._renderer_opt,
+        )
