@@ -13,21 +13,20 @@
 # limitations under the License.
 from __future__ import annotations
 
-from io import BytesIO
+from typing import Any
 
 from src.hawk.profiling.renderers import RenderMode, MimeType, Renderer
 
 try:
-    from fastapi import Response
-    from fastapi.responses import StreamingResponse, HTMLResponse
+    from starlette.responses import Response, HTMLResponse
 except ImportError as e:
     raise ImportError(
-        "FastAPI is required to use the hawk.contrib.fastapi packages. "
-        "Please install it using 'pip install fastapi'."
+        "Starlette is required to use the hawk.contrib.starlette packages. "
+        "Please install it using 'pip install starlette'."
     ) from e
 
 
-def format_response(renderer: Renderer, profile_content: bytes | str | BytesIO) -> Response:
+def format_response(renderer: Renderer, profile_content: bytes | str | dict[str, Any]) -> Response:
     headers = {
         "Content-Type": renderer.mime_type,
     }
@@ -39,4 +38,7 @@ def format_response(renderer: Renderer, profile_content: bytes | str | BytesIO) 
     if renderer.mime_type == MimeType.HTML:
         return HTMLResponse(content=profile_content, headers=headers)
 
-    return StreamingResponse(content=profile_content, headers=headers)
+    if isinstance(profile_content, dict):
+        return Response(content=profile_content, headers=headers)
+
+    return Response(content=profile_content, headers=headers)

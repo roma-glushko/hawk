@@ -39,9 +39,9 @@ async def profile_memory_tracemalloc(request: Request) -> Response:
     render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
     renderer = trmalloc.get_renderer(format)
 
-    profile = renderer.render(profile, render_opt)
+    profile_content = renderer.render(profile, render_opt)
 
-    return format_response(renderer, profile)
+    return format_response(renderer, profile_content)
 
 
 async def start_manual_memory_tracemalloc_profile(request: Request) -> Response:

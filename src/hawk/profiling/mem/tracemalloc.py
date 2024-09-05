@@ -178,7 +178,7 @@ class Renderer(RendererProtocol, Protocol):
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions
-    ) -> Any:
+    ) -> dict[str, Any] | bytes:
         ...
 
 
@@ -359,7 +359,7 @@ class PickleSnapshotRenderer:
 
         return f"hwk_mem_tracemalloc_snapshot_{timestamp}.{self.file_ext}"
 
-    def render(self, profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy, opt: RendererOptions) -> io.BytesIO:
+    def render(self, profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy, opt: RendererOptions) -> bytes:
         """
         Pickling the snapshot class to be able to analyze it later via loading it with `Snapshot.load()`
         """
@@ -383,7 +383,7 @@ class PickleSnapshotRenderer:
 
         snapshot_content.seek(0)
 
-        return snapshot_content
+        return snapshot_content.getvalue()
 
 
 PROFILE_RENDERERS: dict[str, Renderer] = {

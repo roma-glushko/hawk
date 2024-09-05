@@ -18,7 +18,7 @@ from enum import Enum
 
 import src.hawk.profiling.mem.tracemalloc as trmalloc
 import src.hawk.profiling.cpu.pyinstrument as pyinstr
-from src.hawk.contrib.fastapi.response import format_response
+from src.hawk.contrib.starlette.response import format_response
 
 try:
     from fastapi import APIRouter, Response
@@ -65,9 +65,9 @@ def get_router(
         render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
 
-        profile = renderer.render(profile, render_opt)
+        profile_content = renderer.render(profile, render_opt)
 
-        return format_response(renderer, profile)
+        return format_response(renderer, profile_content)
 
     @router.get("/prof/mem/tracemalloc/start/")
     async def start_manual_memory_tracemalloc_profile(frames: int = 30, gc: bool = True) -> Response:
