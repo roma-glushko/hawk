@@ -13,7 +13,11 @@
 # limitations under the License.
 from __future__ import annotations
 
+import contextlib
 from enum import Enum
+from typing import Protocol
+
+from src.hawk.profiling.renderers import RenderedProfile
 
 
 class Profiler(str, Enum):
@@ -21,13 +25,19 @@ class Profiler(str, Enum):
     PYINSTRUMENT = "pyinstrument"
 
 
-PROFILERS: dict[str, None] = {  # TODO: use profiler handlers
+class ProfileHandler(Protocol):
+    @contextlib.contextmanager
+    def profile(self) -> RenderedProfile:
+        ...
+
+
+PROFILERS: dict[str, ProfileHandler] = {
     Profiler.TRACEMALLOC: None,
     Profiler.PYINSTRUMENT: None,
 }
 
 
-def get_profiler(profiler: str) -> None:
+def get_profiler(profiler: str) -> ProfileHandler:
     try:
         return PROFILERS.get(profiler)
     except KeyError:

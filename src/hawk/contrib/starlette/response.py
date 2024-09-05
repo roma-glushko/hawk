@@ -13,9 +13,8 @@
 # limitations under the License.
 from __future__ import annotations
 
-from typing import Any
 
-from src.hawk.profiling.renderers import RenderMode, MimeType, Renderer
+from src.hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 try:
     from starlette.responses import Response, HTMLResponse
@@ -26,19 +25,18 @@ except ImportError as e:
     ) from e
 
 
-def format_response(renderer: Renderer, profile_content: bytes | str | dict[str, Any]) -> Response:
+def format_response(profile: RenderedProfile) -> Response:
     headers = {
-        "Content-Type": renderer.mime_type,
+        "Content-Type": profile.mime_type.value,
     }
 
-    if renderer.render_mode == RenderMode.DOWNLOAD:
-        file_name = renderer.get_file_name()
-        headers["Content-Disposition"] = f"attachment; filename={file_name}"
+    if profile.render_mode == RenderMode.DOWNLOAD:
+        headers["Content-Disposition"] = f"attachment; filename={profile.file_name}"
 
-    if renderer.mime_type == MimeType.HTML:
-        return HTMLResponse(content=profile_content, headers=headers)
+    if profile.mime_type == MimeType.HTML:
+        return HTMLResponse(content=profile.content, headers=headers)
 
-    if isinstance(profile_content, dict):
-        return Response(content=profile_content, headers=headers)
+    if isinstance(profile.content, dict):
+        return Response(content=profile.content, headers=headers)
 
-    return Response(content=profile_content, headers=headers)
+    return Response(content=profile.content, headers=headers)

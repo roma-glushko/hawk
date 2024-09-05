@@ -21,7 +21,7 @@ from dataclasses import dataclass
 from typing import Generator, Protocol
 
 from src.hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
-from src.hawk.profiling.renderers import RenderMode, MimeType, Renderer as RendererProtocol
+from src.hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 PYINSTRUMENT_INSTALLED: bool = True
 
@@ -101,15 +101,13 @@ class PyInstrumentProfiler:
         return profiler
 
 
-class Renderer(RendererProtocol, Protocol):
-    file_ext: str
-
-    def render(self, profiler: Profiler) -> str:
+class Renderer(Protocol):
+    def render(self, profiler: Profiler) -> RenderedProfile:
         ...
 
 
 class JSONRenderer:
-    mime_type: str = MimeType.JSON
+    mime_type: MimeType = MimeType.JSON
     file_ext: str = "json"
     render_mode: RenderMode = RenderMode.DOWNLOAD
 
@@ -121,12 +119,19 @@ class JSONRenderer:
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
-    def render(self, profiler: Profiler) -> str:
-        return profiler.output(renderer=self._renderer)
+    def render(self, profiler: Profiler) -> RenderedProfile:
+        content = profiler.output(renderer=self._renderer)
+
+        return RenderedProfile(
+            file_name=self.get_filename(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=content,
+        )
 
 
 class HTMLRenderer:
-    mime_type: str = MimeType.HTML
+    mime_type: MimeType = MimeType.HTML
     file_ext: str = "html"
     render_mode: RenderMode = RenderMode.VIEW
 
@@ -138,12 +143,19 @@ class HTMLRenderer:
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
-    def render(self, profiler: Profiler) -> str:
-        return profiler.output(renderer=self._renderer)
+    def render(self, profiler: Profiler) -> RenderedProfile:
+        content = profiler.output(renderer=self._renderer)
+
+        return RenderedProfile(
+            file_name=self.get_filename(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=content,
+        )
 
 
 class SpeedscopeRenderer:
-    mime_type: str = MimeType.JSON
+    mime_type: MimeType = MimeType.JSON
     file_ext: str = "speedscope.json"
     render_mode: RenderMode = RenderMode.DOWNLOAD
 
@@ -155,8 +167,15 @@ class SpeedscopeRenderer:
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
-    def render(self, profiler: Profiler) -> str:
-        return profiler.output(renderer=self._renderer)
+    def render(self, profiler: Profiler) -> RenderedProfile:
+        content = profiler.output(renderer=self._renderer)
+
+        return RenderedProfile(
+            file_name=self.get_filename(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=content,
+        )
 
 
 PROFILE_RENDERERS: dict[ProfileFormat, Renderer] = {

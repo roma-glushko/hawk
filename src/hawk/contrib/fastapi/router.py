@@ -65,9 +65,9 @@ def get_router(
         render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
 
-        profile_content = renderer.render(profile, render_opt)
+        rendered_profile = renderer.render(profile, render_opt)
 
-        return format_response(renderer, profile_content)
+        return format_response(rendered_profile)
 
     @router.get("/prof/mem/tracemalloc/start/")
     async def start_manual_memory_tracemalloc_profile(frames: int = 30, gc: bool = True) -> Response:
@@ -88,9 +88,9 @@ def get_router(
         opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
 
-        profile_content = renderer.render(profile, opt)
+        rendered_profile = renderer.render(profile, opt)
 
-        return format_response(renderer, profile_content)
+        return format_response(rendered_profile)
 
     @router.get("/prof/mem/tracemalloc/stop/")
     async def stop_manual_memory_tracemalloc_profile() -> Response:
@@ -120,7 +120,7 @@ def get_router(
 
             profile = renderer.render(profiler)
 
-            return format_response(renderer, profile)
+            return format_response(profile)
 
         @router.get("/prof/cpu/pyinstrument/start/")
         async def start_manual_cpu_pyinst_profile(
@@ -145,6 +145,6 @@ def get_router(
             renderer = pyinstr.get_renderer(format)
             profile = renderer.render(profiler)
 
-            return format_response(renderer, profile)
+            return format_response(profile)
 
     return router

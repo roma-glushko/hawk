@@ -13,8 +13,9 @@
 # limitations under the License.
 from __future__ import annotations
 
+from dataclasses import dataclass
 from enum import Enum
-from typing import Protocol
+from typing import Any
 
 
 class RenderMode(str, Enum):
@@ -28,9 +29,9 @@ class MimeType(str, Enum):
     BINARY = "application/octet-stream"
 
 
-class Renderer(Protocol):
-    mime_type: str
+@dataclass
+class RenderedProfile:
+    file_name: str
+    mime_type: MimeType
     render_mode: RenderMode
-
-    def get_file_name(self) -> str:
-        ...
+    content: bytes | str | dict[str, Any]
