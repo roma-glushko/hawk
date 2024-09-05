@@ -23,9 +23,10 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Iterator, TypedDict, List, Union, Protocol, Generator
+from typing import Any, Iterator, TypedDict, List, Union, Generator, Protocol
 
 from src.hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+from src.hawk.profiling.renderers import RenderMode, MimeType, Renderer as RendererProtocol
 
 
 def format_bytes(value: int) -> str:
@@ -170,11 +171,8 @@ class TracemallocProfiler:
         tracemalloc.stop()
 
 
-class Renderer(Protocol):
+class Renderer(RendererProtocol, Protocol):
     file_ext: str
-
-    def get_file_name(self) -> str:
-        ...
 
     def render(
         self,
@@ -185,7 +183,9 @@ class Renderer(Protocol):
 
 
 class LinenoSnapshotRenderer:
+    mime_type: str = MimeType.JSON
     file_ext: str = "json"
+    render_mode: RenderMode = RenderMode.VIEW
 
     def get_file_name(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -270,7 +270,9 @@ class LinenoSnapshotRenderer:
 
 
 class TracebackSnapshotRender:
+    mime_type: str = MimeType.JSON
     file_ext: str = "json"
+    render_mode: RenderMode = RenderMode.VIEW
 
     def get_file_name(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -348,7 +350,9 @@ class TracebackSnapshotRender:
 
 
 class PickleSnapshotRenderer:
+    mime_type: str = MimeType.BINARY
     file_ext: str = "pkl"
+    render_mode: RenderMode = RenderMode.DOWNLOAD
 
     def get_file_name(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

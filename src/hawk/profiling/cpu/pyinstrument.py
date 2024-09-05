@@ -18,9 +18,10 @@ from datetime import datetime
 from enum import Enum
 from threading import Lock
 from dataclasses import dataclass
-from typing import Protocol, Generator
+from typing import Generator, Protocol
 
 from src.hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
+from src.hawk.profiling.renderers import RenderMode, MimeType, Renderer as RendererProtocol
 
 PYINSTRUMENT_INSTALLED: bool = True
 
@@ -100,18 +101,17 @@ class PyInstrumentProfiler:
         return profiler
 
 
-class Renderer(Protocol):
+class Renderer(RendererProtocol, Protocol):
     file_ext: str
-
-    def get_filename(self) -> str:
-        ...
 
     def render(self, profiler: Profiler) -> str:
         ...
 
 
 class JSONRenderer:
+    mime_type: str = MimeType.JSON
     file_ext: str = "json"
+    render_mode: RenderMode = RenderMode.DOWNLOAD
 
     def __init__(self):
         self._renderer = pyinstr_renderers.JSONRenderer()
@@ -126,7 +126,9 @@ class JSONRenderer:
 
 
 class HTMLRenderer:
+    mime_type: str = MimeType.HTML
     file_ext: str = "html"
+    render_mode: RenderMode = RenderMode.VIEW
 
     def __init__(self):
         self._renderer = pyinstr_renderers.HTMLRenderer()
@@ -141,7 +143,9 @@ class HTMLRenderer:
 
 
 class SpeedscopeRenderer:
+    mime_type: str = MimeType.JSON
     file_ext: str = "speedscope.json"
+    render_mode: RenderMode = RenderMode.DOWNLOAD
 
     def __init__(self):
         self._renderer = pyinstr_renderers.SpeedscopeRenderer()
