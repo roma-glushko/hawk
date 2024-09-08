@@ -11,3 +11,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from typing import Any
+
+from src.hawk.zpages.page import ZComponent
+
+
+class Subheader(ZComponent):
+    def __init__(self, title: str) -> None:
+        self._title = title
+
+    def to_html(self) -> str:
+        return f'<h2 class="subheader">{self._title}</h2>'
+
+    def to_json(self) -> dict[str, Any]:
+        return {"title": self._title}

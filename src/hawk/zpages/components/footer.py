@@ -11,3 +11,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+
+from typing import Any
+
+from src.hawk.zpages.page import ZComponent
+from src.hawk.zpages.templates import TEMPLATES
+
+
+class ZFooter(ZComponent):
+
+    def to_html(self) -> str:
+        return TEMPLATES.render("footer.html")
+
+    def to_json(self) -> dict[str, Any]:
+        return {}

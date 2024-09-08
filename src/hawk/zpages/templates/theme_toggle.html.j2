@@ -1,0 +1,136 @@
+<style>
+    .theme-toggle svg.icon-theme-toggle {
+        --theme-toggle-duration: .4s;
+    }
+
+    .theme-toggle svg.icon-theme-toggle :first-child path {
+        transition-duration: calc(var(--theme-toggle-duration) * .6);
+        transition-property: transform,d;
+        transition-timing-function: cubic-bezier(0,0,.5,1)
+    }
+
+    .theme-toggle svg.icon-theme-toggle g circle,svg.icon-theme-toggle g path {
+        transform-origin: center;
+        transition: transform calc(var(--theme-toggle-duration) * .65) cubic-bezier(0,0,0,1.25) calc(var(--theme-toggle-duration) * .35)
+    }
+
+    .theme-toggle svg.icon-theme-toggle.moon g circle {
+        transform: scale(1.4);
+        transition-delay: 0s
+    }
+
+    .theme-toggle svg.icon-theme-toggle.moon g path {
+        transform: scale(.75);
+        transition-delay: 0s
+    }
+
+    .theme-toggle svg.icon-theme-toggle.moon :first-child path {
+        d: path("M-9 3h25a1 1 0 0017 13v30H0Z");
+        transition-delay: calc(var(--theme-toggle-duration) * .4);
+        transition-timing-function: cubic-bezier(0,0,0,1.25)
+    }
+
+    @supports not (d:path("")) {
+        .theme-toggle svg.icon-theme-toggle.moon :first-child path {
+            transform: translate3d(-9px,14px,0)
+        }
+    }
+</style>
+<ul>
+    <li>
+        <div class="theme-toggle">
+            <a href="#light" data-theme-switcher="dark" aria-label="Switch to Light Mode" class="contrast">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon-theme-toggle moon" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 19a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" stroke-width="0" fill="currentColor"></path><path d="M18.313 16.91l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07z" stroke-width="0" fill="currentColor"></path><path d="M7.007 16.993a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" stroke-width="0" fill="currentColor"></path><path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" stroke-width="0" fill="currentColor"></path><path d="M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" stroke-width="0" fill="currentColor"></path><path d="M6.213 4.81l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.217 -1.567l.102 .07z" stroke-width="0" fill="currentColor"></path><path d="M19.107 4.893a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" stroke-width="0" fill="currentColor"></path><path d="M12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" stroke-width="0" fill="currentColor"></path><path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" stroke-width="0" fill="currentColor"></path></svg>
+            </a>
+            <a href="#dark" data-theme-switcher="light" aria-label="Switch to Dark Mode" class="contrast">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon-theme-toggle" width="1em" height="1em" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"></path><path d="M12 1.992a10 10 0 1 0 9.236 13.838c.341 -.82 -.476 -1.644 -1.298 -1.31a6.5 6.5 0 0 1 -6.864 -10.787l.077 -.08c.551 -.63 .113 -1.653 -.758 -1.653h-.266l-.068 -.006l-.06 -.002z" stroke-width="0" fill="currentColor"></path></svg>
+            </a>
+        </div>
+    </li>
+</ul>
+<script>
+    const themeSwitcher = {
+        // Config
+        _scheme: "auto",
+        buttonsTarget: "a[data-theme-switcher]",
+        buttonAttribute: "data-theme-switcher",
+        rootAttribute: "data-theme",
+        localStorageKey: "picoPreferredColorScheme",
+
+        // Init
+        init() {
+            this.scheme = this.schemeFromLocalStorage;
+            this.initSwitchers();
+        },
+
+        // Get color scheme from local storage
+        get schemeFromLocalStorage() {
+            return window.localStorage?.getItem(this.localStorageKey) ?? this._scheme;
+        },
+
+        // Preferred color scheme
+        get preferredColorScheme() {
+            return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        },
+
+        // Init switchers
+        initSwitchers() {
+            const buttons = document.querySelectorAll(this.buttonsTarget);
+
+            buttons.forEach((button) => {
+                button.addEventListener(
+                    "click",
+                    (event) => {
+                        event.preventDefault();
+                        // Set scheme
+                        this.scheme = button.getAttribute(this.buttonAttribute);
+                    },
+                    false
+                );
+            });
+        },
+
+        // Set scheme
+        set scheme(scheme) {
+            if (scheme === "auto") {
+                this._scheme = this.preferredColorScheme;
+            } else if (scheme === "dark" || scheme === "light") {
+                this._scheme = scheme;
+            }
+
+            this.applyScheme();
+            this.schemeToLocalStorage();
+        },
+
+        // Get scheme
+        get scheme() {
+            return this._scheme;
+        },
+
+        // Apply scheme
+        applyScheme() {
+            document.querySelector("html")?.setAttribute(this.rootAttribute, this.scheme);
+
+            this.refreshToggles();
+        },
+
+        refreshToggles() {
+            document.querySelectorAll(this.buttonsTarget).forEach((btn) => {
+                if (btn.getAttribute(this.buttonAttribute) === this.scheme) {
+                    btn.style.display = "none";
+                    return;
+                }
+
+                btn.style.display = "block";
+            });
+        },
+
+        // Store scheme to local storage
+        schemeToLocalStorage() {
+            window.localStorage?.setItem(this.localStorageKey, this.scheme);
+        },
+    };
+
+    // Init
+    themeSwitcher.init();
+</script>
