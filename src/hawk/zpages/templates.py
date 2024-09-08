@@ -21,7 +21,7 @@ except ModuleNotFoundError:  # pragma: nocover
     jinja2 = None  # type: ignore[assignment]
 
 
-TEMPLATES_PATH = Path(__file__).parent / "templates"
+TEMPLATES_PATH = (Path(__file__).parent / "templates").resolve()
 
 def merge_json(json_parts: Sequence[dict[str, Any]]) -> dict[str, Any]:
     """
@@ -39,7 +39,7 @@ class Jinja2Templates:
     """
     def __init__(self, loader: jinja2.BaseLoader) -> None:
         if jinja2 is None:
-            raise ImportError("Jinja2 must be installed to use zpages")
+            raise ImportError("Jinja2 must be installed to use ZPages")
 
         self._env = jinja2.Environment(loader=loader)
 

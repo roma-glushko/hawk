@@ -16,20 +16,29 @@ from __future__ import annotations
 from typing import Any
 
 from src.hawk.zpages.components.base import ZComponent
-from src.hawk.zpages.templates import TEMPLATES
+from src.hawk.zpages.templates import merge_json
 
 
-class ZHeader(ZComponent):
-    def __init__(self, title: str, description: str | None = None) -> None:
-        self._title = title
-        self._description = description
+class ZColumns(ZComponent):
+    def __init__(self, columns: int = 2, id: str | None = None) -> None:
+        if columns < 1:
+            raise ValueError("Columns must be greater than 0")
+
+        if columns > 5:
+            raise ValueError("Columns must be less than or equal to 5")
+
+        self.id = id
+        self.columns = [ZComponent() for _ in range(columns)]
+
+    def __enter__(self) -> list[ZComponent]:
+        return self.columns
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None
+        pass
 
     def to_html(self) -> str:
-        return TEMPLATES.render(
-            "header.html.j2",
-            title=self._title,
-            description=self._description,
-        )
+        return "".join([column.to_html() for column in self.columns])
 
     def to_json(self) -> dict[str, Any]:
-        return {"title": self._title, "description": self._description}
+        # TODO: finalize the JSON structure
+        return merge_json([column.to_json() for column in self.columns])

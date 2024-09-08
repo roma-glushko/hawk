@@ -28,6 +28,12 @@ class ZContainer(ZComponent):
     def add(self, component: ZComponent) -> None:
         self.children.append(component)
 
+    def container(self) -> ZContainer:
+        container = ZContainer()
+        self.add(container)
+
+        return container
+
     def __or__(self, other) -> "ZContainer":
         self.add(other)
         return self
@@ -53,3 +59,11 @@ class ZContainer(ZComponent):
             }
 
         return json
+
+class ZMainContainer(ZContainer):
+    def __init__(self, id: str | None = None) -> None:
+        super().__init__(id=id, tag="main")
+
+class ZSection(ZContainer):
+    def __init__(self, id: str | None = None) -> None:
+        super().__init__(id=id, tag="section")

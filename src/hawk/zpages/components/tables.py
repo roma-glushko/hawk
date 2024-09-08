@@ -35,10 +35,10 @@ class ZTable(ZComponent):
 
     def to_html(self) -> str:
         return TEMPLATES.render(
-            "table.html",
+            "table.html.j2",
             cols=self.cols,
             rows=self.rows,
-            style=self.style.value,
+            style=self.style.value if self.style else None,
         )
 
     def to_json(self) -> dict[str, Any]:

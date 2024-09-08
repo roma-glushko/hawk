@@ -16,8 +16,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.hawk.zpages.components.base import ZComponent, slugify
-from src.hawk.zpages.components.container import ZContainer
-from src.hawk.zpages.components.footer import ZFooter
+from src.hawk.zpages.components.container import ZContainer, ZMainContainer
 from src.hawk.zpages.components.header import ZHeader
 from src.hawk.zpages.templates import TEMPLATES, merge_json
 from src.hawk.zpages.theme import ThemeColor, THEME_COLOR
@@ -37,11 +36,14 @@ class ZPage:
         self.theme_color = theme_color or THEME_COLOR
 
         self.header = ZHeader(title, description)
-        self.main_container = ZContainer(tag="main")
-        self.footer = ZFooter()
+        self.main_container = ZMainContainer()
 
     def add(self, component: ZComponent) -> None:
         self.main_container.add(component)
+
+    def container(self) -> ZContainer:
+        """Returns a new container"""
+        return self.main_container.container()
 
     def to_html(self) -> str:
         html_parts: list[str] = [
@@ -50,11 +52,11 @@ class ZPage:
         ]
 
         return TEMPLATES.render(
-            "page.html",
+            "page.html.j2",
             id=self.id,
             title=self.title,
             description=self.description,
-            theme_color=self.theme_color,
+            theme_color=self.theme_color.value,
             content="".join(html_parts),
         )
 
@@ -65,7 +67,6 @@ class ZPage:
             },
             self.header.to_json(),
             self.main_container.to_json(),
-            self.footer.to_json(),
         ]
 
         return merge_json(json_parts)

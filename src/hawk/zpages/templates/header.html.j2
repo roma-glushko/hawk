@@ -6,11 +6,11 @@
                 <hgroup>
                     <h1>{{ title }}</h1>
                     {% if description %}
-                        <p>{{ description }}</p>
+                    <p>{{ description }}</p>
                     {% endif %}
                 </hgroup>
             </li>
         </ul>
-        {% include "theme_toggle.html" %}
+        {% include "theme_toggle.html.j2" %}
     </nav>
 </header>
