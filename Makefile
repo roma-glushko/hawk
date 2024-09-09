@@ -38,14 +38,14 @@ publish: ## Publish the project
 	@pdm publish
 
 test: ## Run tests
-	@coverage run -m pytest $(TESTS) $(SOURCE)
+	@pdm run coverage run -m pytest $(TESTS) $(SOURCE)
 
 test-cov-html: ## Generate test coverage
-	@coverage report --show-missing
-	@coverage html
+	@pdm run coverage report --show-missing
+	@pdm run coverage html
 
 test-cov-xml: ## Run tests
-	@coverage run -m pytest $(TESTS) --cov $(SOURCE) --cov-report=xml
+	@pdm run coverage run -m pytest $(TESTS) --cov $(SOURCE) --cov-report=xml
 
 test-cov-open: test-cov-html  ## Open test coverage in browser
 	@open htmlcov/index.html

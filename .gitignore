@@ -4,3 +4,5 @@
 .pdm-build
 dist
 .pdm-python
+
+.coverage
