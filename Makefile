@@ -36,3 +36,16 @@ build: ## Build the project
 publish: ## Publish the project
 	@echo "🚀 Publishing the project.."
 	@pdm publish
+
+test: ## Run tests
+	@coverage run -m pytest $(TESTS) $(SOURCE)
+
+test-cov-html: ## Generate test coverage
+	@coverage report --show-missing
+	@coverage html
+
+test-cov-xml: ## Run tests
+	@coverage run -m pytest $(TESTS) --cov $(SOURCE) --cov-report=xml
+
+test-cov-open: test-cov-html  ## Open test coverage in browser
+	@open htmlcov/index.html
