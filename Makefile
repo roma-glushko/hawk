@@ -28,3 +28,24 @@ lint: ## Lint source code
 	@pdm run ruff check --fix $(SOURCE) $(TESTS)
 	@echo "🧽 MyPy"
 	@pdm run mypy --pretty $(SOURCE) $(TESTS)
+
+build: ## Build the project
+	@echo "🏗️ Building the project.."
+	@pdm build
+
+publish: ## Publish the project
+	@echo "🚀 Publishing the project.."
+	@pdm publish
+
+test: ## Run tests
+	@pdm run coverage run -m pytest $(TESTS) $(SOURCE)
+
+test-cov-html: ## Generate test coverage
+	@pdm run coverage report --show-missing
+	@pdm run coverage html
+
+test-cov-xml: ## Run tests
+	@pdm run coverage run -m pytest $(TESTS) --cov $(SOURCE) --cov-report=xml
+
+test-cov-open: test-cov-html  ## Open test coverage in browser
+	@open htmlcov/index.html
