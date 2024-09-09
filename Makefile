@@ -28,3 +28,11 @@ lint: ## Lint source code
 	@pdm run ruff check --fix $(SOURCE) $(TESTS)
 	@echo "🧽 MyPy"
 	@pdm run mypy --pretty $(SOURCE) $(TESTS)
+
+build: ## Build the project
+	@echo "🏗️ Building the project.."
+	@pdm build
+
+publish: ## Publish the project
+	@echo "🚀 Publishing the project.."
+	@pdm publish
