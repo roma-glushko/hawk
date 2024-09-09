@@ -15,17 +15,17 @@ debugging production services.
 
 ## Features
 
-- ⏱️**Memory Profiling** via the `tracemalloc` stdlib
-- ⏱️**CPU Profiling** (incl. Asyncio services) via `pyinstrument` & `cProfile` (soon)
-- 🙋‍♀️**Activate profiling on demand** in real environments
-- 🔒**Control who can turn on profiling and access debug pages** via a simple session API (🚧soon)
-- 🎨**Render your profiles** right from your browser
-- ⬇️**Download your profiles** for the further investigation
-- 🔭**Expose internal state** of your service via debug vars (🚧soon)
-- 🔧**Create custom debug pages** (a.k.a. `ZPages`) in a simplified way (🚧soon)
-- 🔧**Controlled via environment variables**, no codebase modifications needed to enable/disable functionality completely
-- 🔓**No elevated permissions needed** (`CAP_PTRACE`, etc.)
-- 🔭**OpenTelemetry**-aware (🚧soon)
+- ⏱️ **Memory Profiling** via the `tracemalloc` stdlib
+- ⏱️ **CPU Profiling** (incl. Asyncio services) via `pyinstrument` & `cProfile` (soon)
+- 🙋‍♀️ **Activate profiling on demand** in real environments
+- 🔒 **Control who can turn on profiling and access debug pages** via a simple session API (🚧soon)
+- 🎨 **Render your profiles** right from your browser
+- ⬇️ **Download your profiles** for the further investigation
+- 🔭 **Expose internal state** of your service via debug vars (🚧soon)
+- 🔧 **Create custom debug pages** (a.k.a. `ZPages`) in a simplified way (🚧soon)
+- 🔧 **Controlled via environment variables**, no codebase modifications needed to enable/disable functionality completely
+- 🔓 **No elevated permissions needed** (`CAP_PTRACE`, etc.)
+- 🔭 **OpenTelemetry**-aware (🚧soon)
 
 <div align="center">
     <p>Integrated With:</p>
