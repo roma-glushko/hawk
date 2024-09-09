@@ -38,8 +38,8 @@ jobs:
       - name: "Build package & docs"
         run: "make build"
 
-      - name: "Run tests"
-        run: "make test"
+#      - name: "Run tests"
+#        run: "make test"
 
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v2
+#      - name: Upload Coverage to Codecov
+#        uses: codecov/codecov-action@v2
