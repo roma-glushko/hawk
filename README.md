@@ -30,8 +30,8 @@ debugging production services.
 <div align="center">
     <p>Integrated With:</p>
     <p align="center">
-        <img src="https://fastapi.tiangolo.com/img/logo-margin/logo-teal.png" width="150px" alt="FastAPI Logo" />
-        <img src="https://www.starlette.io/img/starlette.png" width="150px" alt="Starlette Logo" />
-        <img src="https://flask.palletsprojects.com/en/3.0.x/_images/flask-horizontal.png" width="150px" alt="Flask Logo" />
+        <img src="assets/contrib/fastapi.png" width="150px" alt="FastAPI Logo" />
+        <img src="assets/contrib/starlette.svg" width="150px" alt="Starlette Logo" />
+        <img src="assets/contrib/flask.png" width="150px" alt="Flask Logo" />
     </p>
 </div>
