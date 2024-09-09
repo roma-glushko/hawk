@@ -1,0 +1,24 @@
+---
+name: Publish Package
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+jobs:
+  publish:
+    name: Publish Package to PyPI
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pdm-project/setup-pdm@v4
+
+      - name: Publish Package
+        run: make build
+
+      - name: Publish Package
+        run: make publish
