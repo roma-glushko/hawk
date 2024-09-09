@@ -25,7 +25,7 @@ distribution = true
 [tool.pdm.version]
 source = "scm"
 fallback_version = "0.0.0"
-write_to = "src/hawk/version.py"
+write_to = "hawk/version.py"
 write_template = """
 # Copyright (c) 2024 Roman Hlushko and various contributors
 #
