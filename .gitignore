@@ -1,4 +1,10 @@
 .idea
 .venv
 
+.pdm-build
+dist
 .pdm-python
+
+.coverage
+
+site

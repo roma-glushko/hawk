@@ -1,6 +1,6 @@
 [project]
-name = "hawk"
-version = "0.0.1"
+name = "hawk-debug"
+dynamic = ["version"]
 description = "A dubugging & profiling toolkit for production Python microservices"
 authors = [
     {name = "Roman Glushko", email = "roman.glushko.m@gmail.com"},
@@ -14,6 +14,13 @@ license = {text = "MIT"}
 pyinstrument = [
     "pyinstrument>=4.7.2",
 ]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.34",
+    "mdx-include>=1.4.2",
+    "mkautodoc>=0.2.0",
+    "mkdocs-pymdownx-material-extras>=2.5.6",
+]
 
 [build-system]
 requires = ["pdm-backend"]
@@ -22,6 +29,28 @@ build-backend = "pdm.backend"
 [tool.pdm]
 distribution = true
 
+[tool.pdm.version]
+source = "scm"
+fallback_version = "0.0.0"
+write_to = "hawk/version.py"
+write_template = """
+# Copyright (c) 2024 Roman Hlushko and various contributors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+__version__ = '{}'
+"""
+
 [tool.pdm.dev-dependencies]
 dev = [
     "ruff>=0.5.5",
@@ -29,4 +58,6 @@ dev = [
     "fastapi>=0.111.1",
     "starlette>=0.37.2",
     "flask>=3.0.3",
+    "coverage>=7.6.1",
+    "pytest-cov>=5.0.0",
 ]
