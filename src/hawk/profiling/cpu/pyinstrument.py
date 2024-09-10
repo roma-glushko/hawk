@@ -20,8 +20,8 @@ from threading import Lock
 from dataclasses import dataclass
 from typing import Generator, Protocol, Mapping
 
-from src.hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
-from src.hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
+from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 PYINSTRUMENT_INSTALLED: bool = True
 

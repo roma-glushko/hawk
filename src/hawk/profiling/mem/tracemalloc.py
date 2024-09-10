@@ -25,8 +25,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Iterator, TypedDict, List, Union, Generator, Protocol, Mapping
 
-from src.hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
-from src.hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 
 def format_bytes(value: int) -> str:

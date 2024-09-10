@@ -19,8 +19,8 @@ from typing import Sequence
 from starlette.applications import Request, Response
 from starlette.routing import Router, BaseRoute, Middleware
 
-import src.hawk.profiling.mem.tracemalloc as trmalloc
-from src.hawk.contrib.starlette.response import format_response
+import hawk.profiling.mem.tracemalloc as trmalloc
+from hawk.contrib.starlette.response import format_response
 
 
 async def profile_memory_tracemalloc(request: Request) -> Response:

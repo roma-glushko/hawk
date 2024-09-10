@@ -17,9 +17,9 @@ import contextlib
 from enum import Enum
 from typing import Protocol, Generator, Type, Mapping
 
-from src.hawk.profiling.renderers import RenderedProfile
-from src.hawk.profiling.mem import tracemalloc
-from src.hawk.profiling.cpu import pyinstrument
+from hawk.profiling.renderers import RenderedProfile
+from hawk.profiling.mem import tracemalloc
+from hawk.profiling.cpu import pyinstrument
 
 
 class ProfilerType(str, Enum):

@@ -18,8 +18,8 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
-from src.hawk.contrib.starlette.response import format_response
-from src.hawk.profiling.profilers import get_profiler, ProfilerType
+from hawk.contrib.starlette.response import format_response
+from hawk.profiling.profilers import get_profiler, ProfilerType
 
 
 class DebugMiddleware(BaseHTTPMiddleware):

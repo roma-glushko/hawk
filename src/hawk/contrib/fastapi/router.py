@@ -16,9 +16,9 @@ from __future__ import annotations
 import asyncio
 from enum import Enum
 
-import src.hawk.profiling.mem.tracemalloc as trmalloc
-import src.hawk.profiling.cpu.pyinstrument as pyinstr
-from src.hawk.contrib.starlette.response import format_response
+import hawk.profiling.mem.tracemalloc as trmalloc
+import hawk.profiling.cpu.pyinstrument as pyinstr
+from hawk.contrib.starlette.response import format_response
 
 try:
     from fastapi import APIRouter, Response

@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 
-from src.hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 try:
     from starlette.responses import Response, HTMLResponse

@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from src.hawk.contrib.starlette.middleware import DebugMiddleware
-from src.hawk.contrib.fastapi.router import get_router
+from hawk.contrib.starlette.middleware import DebugMiddleware
+from hawk.contrib.fastapi.router import get_router
 
 __all__ = ("DebugMiddleware", "get_router")
