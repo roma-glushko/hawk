@@ -44,29 +44,43 @@ plugins:
 - search
 
 markdown_extensions:
-- toc:
+  # Python Markdown
+  abbr:
+  attr_list:
+  md_in_html:
+  tables:
+  toc:
     permalink: true
-- admonition
-- pymdownx.details
-- pymdownx.superfences
-- mkautodoc
-- markdown.extensions.codehilite:
-    guess_lang: false
-- mdx_include:
-    base_path: docs
-- codehilite
-- md_in_html
-- attr_list
-- pymdownx.emoji:
-    emoji_generator: !!python/name:material.extensions.emoji.to_svg
-    emoji_index: !!python/name:material.extensions.emoji.twemoji
-- pymdownx.superfences:
+
+  # Python Markdown Extensions
+  pymdownx.betterem:
+    smart_enable: all
+  pymdownx.caret:
+  pymdownx.highlight:
+    line_spans: __span
+  pymdownx.inlinehilite:
+  pymdownx.keys:
+  pymdownx.mark:
+  pymdownx.superfences:
     custom_fences:
     - name: mermaid
       class: mermaid
-      format: !!python/name:pymdownx.superfences.fence_code_format ''
-- pymdownx.tabbed:
-    alternate_style: true
+      format: !!python/name:pymdownx.superfences.fence_code_format
+  pymdownx.tilde:
+
+  pymdownx.blocks.admonition:
+    types:
+    - note
+    - attention
+    - caution
+    - danger
+    - error
+    - tip
+    - hint
+    - warning
+  pymdownx.blocks.details:
+  pymdownx.blocks.tab:
+    alternate_style: True
 
 extra:
     consent:
