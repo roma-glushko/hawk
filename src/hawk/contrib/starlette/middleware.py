@@ -58,14 +58,12 @@ class DebugMiddleware(BaseHTTPMiddleware):
             # TODO: consider logging
             return await call_next(request)
 
-        # TODO: get the profile, validate params and start profiling
         profiler = get_profiler(ProfilerType(profiler_type))(query_params)
 
-        try:
-            with profiler.profile():
-                _ = await call_next(request)
-        except Exception:
-            ...
+        # TODO: in case of error we may want to get profile rather than the error response,
+        #  let users decide what they want
+        with profiler.profile():
+            _ = await call_next(request)
 
         rendered_profile = profiler.render_profile()
 
