@@ -14,6 +14,12 @@ license = {text = "MIT"}
 pyinstrument = [
     "pyinstrument>=4.7.2",
 ]
+docs = [
+    "mkdocs>=1.6.1",
+    "mkdocs-material>=9.5.34",
+    "mdx-include>=1.4.2",
+    "mkautodoc>=0.2.0",
+]
 
 [build-system]
 requires = ["pdm-backend"]

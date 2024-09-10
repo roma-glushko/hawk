@@ -29,7 +29,13 @@ lint: ## Lint source code
 	@echo "🧽 MyPy"
 	@pdm run mypy --pretty $(SOURCE) $(TESTS)
 
-build: ## Build the project
+docs-run: ## Start docs with autoreload
+	@pdm run mkdocs serve
+
+build-docs: ## Build docs
+	@pdm run mkdocs build
+
+build: build-docs ## Build the project
 	@echo "🏗️ Building the project.."
 	@pdm build
 
