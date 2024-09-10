@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "pyinstrument"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:d8c5a5c51f95863f374635f2c3814c3ae25bc29beead98373b3130b5d2299bb3"
+content_hash = "sha256:a98bbd8c932fd1e804bab15d263a427c9669ccc031615be870282aae3faa14e9"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -790,6 +790,20 @@ groups = ["docs"]
 files = [
     {file = "mkdocs_material_extensions-1.3.1-py3-none-any.whl", hash = "sha256:adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31"},
     {file = "mkdocs_material_extensions-1.3.1.tar.gz", hash = "sha256:10c9511cea88f568257f960358a467d12b970e1f7b2c0e5fb2bb48cab1928443"},
+]
+
+[[package]]
+name = "mkdocs-pymdownx-material-extras"
+version = "2.5.6"
+requires_python = ">=3.8"
+summary = "Plugin to extend MkDocs Material theme."
+groups = ["docs"]
+dependencies = [
+    "mkdocs-material>=8.3.3",
+]
+files = [
+    {file = "mkdocs_pymdownx_material_extras-2.5.6-py3-none-any.whl", hash = "sha256:ed5bfc23c6f42f485603e05abc22926c27c2b31ef9972a0132582b73f49557e9"},
+    {file = "mkdocs_pymdownx_material_extras-2.5.6.tar.gz", hash = "sha256:e0cf0aa4f284a78ecab9caf0bc62a12d8b836a5abbd49f9638cc03b2698a021c"},
 ]
 
 [[package]]

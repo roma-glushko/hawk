@@ -19,7 +19,7 @@ docs = [
     "mkdocs-material>=9.5.34",
     "mdx-include>=1.4.2",
     "mkautodoc>=0.2.0",
-    "pymdown-extensions>=10.9",
+    "mkdocs-pymdownx-material-extras>=2.5.6",
 ]
 
 [build-system]
