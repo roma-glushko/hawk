@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "pyinstrument"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:a155fe7da2996d04d3ae565e5d0694b48cdcd4c41d53a02ced3e0589ae2b2b35"
+content_hash = "sha256:d8c5a5c51f95863f374635f2c3814c3ae25bc29beead98373b3130b5d2299bb3"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
