@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default"]
+groups = ["default", "pyinstrument"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:a280c6fccedefdb278b4ed0ab9d501c6eea977cec36443d977d5e2492878b6c0"
+content_hash = "sha256:d6389c4a43b9d9aa1d31ea968c4006110cd3c78272040bd15ed3618992ac4b45"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -189,11 +189,24 @@ files = [
 
 [[package]]
 name = "hawk-debug"
-version = "0.1.dev26"
+version = "0.1.dev28+g1592145.d20240910"
 requires_python = ">=3.9"
 path = "../.."
 summary = "A dubugging & profiling toolkit for production Python microservices"
 groups = ["default"]
+
+[[package]]
+name = "hawk-debug"
+version = "0.1.dev28"
+extras = ["pyinstrument"]
+requires_python = ">=3.9"
+path = "../.."
+summary = "A dubugging & profiling toolkit for production Python microservices"
+groups = ["default"]
+dependencies = [
+    "hawk-debug @ file:///${PROJECT_ROOT}/../..",
+    "pyinstrument>=4.7.2",
+]
 
 [[package]]
 name = "httpcore"
@@ -366,6 +379,26 @@ groups = ["default"]
 files = [
     {file = "pygments-2.18.0-py3-none-any.whl", hash = "sha256:b8e6aca0523f3ab76fee51799c488e38782ac06eafcf95e7ba832985c8e7b13a"},
     {file = "pygments-2.18.0.tar.gz", hash = "sha256:786ff802f32e91311bff3889f6e9a86e81505fe99f2735bb6d60ae0c5004f199"},
+]
+
+[[package]]
+name = "pyinstrument"
+version = "4.7.3"
+requires_python = ">=3.8"
+summary = "Call stack profiler for Python. Shows you why your code is slow!"
+groups = ["default"]
+files = [
+    {file = "pyinstrument-4.7.3-cp312-cp312-macosx_10_9_universal2.whl", hash = "sha256:7c29f7a23e0f704f5f21aeeb47193460601e7359d09156ea043395870494b39a"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:84ceb25f24ceb03dc770b6c142ec4419506d3a04d66d778810cb8da76df25651"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d564d6f6151d3cab28430092cdcbd4aefe0834551af4b4f97e6e57025a348557"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:7e23ce5fcc30346e576b98ca24bd2a9a68cbc42b90cdb0d8f376fa82cee2fe23"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e23d5ad174d2a488c164abee4407f3f3a6e6d5721ab1fab9e0ad9570631704c2"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:d87749f68b9cc221628aab989a4a73b16030c27c714ecd83892d716f863d9739"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-musllinux_1_2_i686.whl", hash = "sha256:897d09c876f18b713498be21430b39428a9254ffec0c6c06796fce0e6a8fe437"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:2092910e745cfd0a62dadf041afb38239195244871ee127b1028e7e790602e6b"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-win32.whl", hash = "sha256:e9824e11290f6f2772c257cc0bd07f59405759287db6ebcbb06f962a3eba68fb"},
+    {file = "pyinstrument-4.7.3-cp312-cp312-win_amd64.whl", hash = "sha256:cf1e67b37e936f647ce731fff5d2f54e102813274d350671dc5961ec8b46b3ff"},
+    {file = "pyinstrument-4.7.3.tar.gz", hash = "sha256:3ad61041ff1880d4c99d3384cd267e38a0a6472b5a4dd765992db376bd4394c8"},
 ]
 
 [[package]]

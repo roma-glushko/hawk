@@ -98,7 +98,7 @@ def get_router(
 
         return Response(content="Memory profiling stopped")
 
-    if pyinstr.PYINSTRUMENT_INSTALLED:
+    if pyinstr.pyinstrument is not None:
         @router.get("/prof/cpu/pyinstrument/")
         async def profile_cpu_pyinst(
             duration: int = 5,
