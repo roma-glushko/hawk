@@ -12,10 +12,12 @@ class ZSubheader(ZComponent):
 
         self.title = title
         self.level = level
-        self.id = id
+        self.id = id or f"subtitle_{level}"
 
     def to_html(self) -> str:
         return f'<h{self.level} id="{self.id}">{self.title}</h{self.level}>'
 
     def to_json(self) -> dict[str, Any]:
-        ...
+        return {
+            self.id: self.title
+        }

@@ -23,13 +23,13 @@ class ZContainer(ZComponent):
     def __init__(self, id: str | None = None, tag: str = "div") -> None:
         self.id = id
         self.tag = tag
-        self.children = []
+        self.children: list[ZComponent] = []
 
     def add(self, component: ZComponent) -> None:
         self.children.append(component)
 
-    def container(self) -> ZContainer:
-        container = ZContainer()
+    def container(self, *args, **kwargs) -> ZContainer:
+        container = ZContainer(*args, **kwargs)
         self.add(container)
 
         return container

@@ -16,6 +16,7 @@ from __future__ import annotations
 from typing import Any
 
 from src.hawk.zpages.components.base import ZComponent
+from src.hawk.zpages.components.container import ZContainer
 from src.hawk.zpages.templates import merge_json
 
 
@@ -28,12 +29,12 @@ class ZColumns(ZComponent):
             raise ValueError("Columns must be less than or equal to 5")
 
         self.id = id
-        self.columns = [ZComponent() for _ in range(columns)]
+        self.columns: list[ZComponent] = [ZContainer() for _ in range(columns)]
 
     def __enter__(self) -> list[ZComponent]:
         return self.columns
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         pass
 
     def to_html(self) -> str:

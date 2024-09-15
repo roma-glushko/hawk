@@ -30,7 +30,7 @@ def merge_json(json_parts: Sequence[dict[str, Any]]) -> dict[str, Any]:
     if not json_parts:
         return {}
 
-    return functools.reduce(lambda x, y: {**x, **y}, json_parts)
+    return functools.reduce(lambda x, y: {**(x or {}), **(y or {})}, json_parts)
 
 
 class Jinja2Templates:
