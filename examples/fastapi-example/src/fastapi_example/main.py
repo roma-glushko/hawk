@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import asyncio
+import time
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -24,7 +25,6 @@ app = FastAPI(
 
 app.add_middleware(
     DebugMiddleware,
-    static_debug_token="debug",
 )
 
 app.include_router(get_router(
@@ -38,9 +38,16 @@ class WelcomeResponse(BaseModel):
     api_docs_url: str
 
 
+async def busy_wait(duration):
+    end_time = time.time() + duration
+
+    while time.time() < end_time:
+        await asyncio.sleep(0.1)
+
+
 @app.get("/")
 async def welcome() -> WelcomeResponse:
-    await asyncio.sleep(1)
+    await busy_wait(1)
 
     return WelcomeResponse(
         message="Welcome to Hawk: FastAPI Example",
