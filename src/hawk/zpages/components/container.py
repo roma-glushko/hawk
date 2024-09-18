@@ -15,8 +15,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.hawk.zpages.components.base import ZComponent
-from src.hawk.zpages.templates import merge_json
+from hawk.zpages.components.base import ZComponent
+from hawk.zpages.templates import merge_json
 
 
 class ZContainer(ZComponent):

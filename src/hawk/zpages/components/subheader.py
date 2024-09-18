@@ -11,17 +11,26 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+
 from typing import Any
 
-from src.hawk.zpages.page import ZComponent
+from hawk.zpages.components.base import ZComponent
 
 
-class Subheader(ZComponent):
-    def __init__(self, title: str) -> None:
-        self._title = title
+class ZSubheader(ZComponent):
+    def __init__(self, title: str, level: int = 2, id: str | None = None) -> None:
+        if not 2 <= level <= 6:
+            raise ValueError("Level must be between 2 and 6")
+
+        self.title = title
+        self.level = level
+        self.id = id or f"subtitle_{level}"
 
     def to_html(self) -> str:
-        return f'<h2 class="subheader">{self._title}</h2>'
+        return f'<h{self.level} id="{self.id}">{self.title}</h{self.level}>'
 
     def to_json(self) -> dict[str, Any]:
-        return {"title": self._title}
+        return {
+            self.id: self.title
+        }

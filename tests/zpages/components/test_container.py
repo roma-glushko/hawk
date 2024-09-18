@@ -15,7 +15,7 @@ from typing import Any
 
 import pytest
 
-from src.hawk.zpages.components.container import ZContainer
+from hawk.zpages.components.container import ZContainer
 
 @pytest.mark.parametrize(
     "params, expected_html, expected_json",

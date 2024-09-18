@@ -16,8 +16,8 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from src.hawk.zpages.components.base import ZComponent, slugify
-from src.hawk.zpages.templates import TEMPLATES
+from hawk.zpages.components.base import ZComponent, slugify
+from hawk.zpages.templates import TEMPLATES
 
 
 class TableStyle(str, Enum):

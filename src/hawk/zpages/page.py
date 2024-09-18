@@ -15,11 +15,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.hawk.zpages.components.base import ZComponent, slugify
-from src.hawk.zpages.components.container import ZContainer, ZMainContainer
-from src.hawk.zpages.components.header import ZHeader
-from src.hawk.zpages.templates import TEMPLATES, merge_json
-from src.hawk.zpages.theme import ThemeColor, THEME_COLOR
+from hawk.zpages.components.base import ZComponent, slugify
+from hawk.zpages.components.container import ZContainer, ZMainContainer
+from hawk.zpages.components.header import ZHeader
+from hawk.zpages.templates import TEMPLATES, merge_json
+from hawk.zpages.theme import ThemeColor, THEME_COLOR
 
 
 class ZPage:
