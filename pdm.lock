@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "pyinstrument", "zpages"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:2f7f1a8e166b52272f98a724ca129636b235d3bc437b662cb1c9f46bc88047a2"
+content_hash = "sha256:d320d426996a14e142a9f4e20f14786011540a3690858294836e0238e87da193"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -1082,25 +1082,6 @@ files = [
     {file = "pyinstrument-4.7.2-cp39-cp39-win32.whl", hash = "sha256:4db19ffbb0047e00c6d444ac0e648505982399361aa609b3af9229a971dca79e"},
     {file = "pyinstrument-4.7.2-cp39-cp39-win_amd64.whl", hash = "sha256:b174abcc7438f8aa20a190fcafd8eba099af54af445ce5ea1b28b25750f59652"},
     {file = "pyinstrument-4.7.2.tar.gz", hash = "sha256:8c4e4792e7bc2de6ad757dcb05bb6739b5aed64f834602e8121f611e3278e0d1"},
-]
-
-[[package]]
-name = "pytest"
-version = "8.3.2"
-requires_python = ">=3.8"
-summary = "pytest: simple powerful testing with Python"
-groups = ["dev"]
-dependencies = [
-    "colorama; sys_platform == \"win32\"",
-    "exceptiongroup>=1.0.0rc8; python_version < \"3.11\"",
-    "iniconfig",
-    "packaging",
-    "pluggy<2,>=1.5",
-    "tomli>=1; python_version < \"3.11\"",
-]
-files = [
-    {file = "pytest-8.3.2-py3-none-any.whl", hash = "sha256:4ba08f9ae7dcf84ded419494d229b48d0903ea6407b030eaec46df5e6a73bba5"},
-    {file = "pytest-8.3.2.tar.gz", hash = "sha256:c132345d12ce551242c87269de812483f5bcc87cdbb4722e48487ba194f9fdce"},
 ]
 
 [[package]]
