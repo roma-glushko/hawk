@@ -4,7 +4,6 @@
 
 ## PyInstrument
 
-TBU
 
 ## cProfile
 

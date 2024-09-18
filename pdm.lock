@@ -5,7 +5,7 @@
 groups = ["default", "dev", "docs", "pyinstrument"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:a98bbd8c932fd1e804bab15d263a427c9669ccc031615be870282aae3faa14e9"
+content_hash = "sha256:893d3cf77bcc62bfd9ff005742b6c47b951d6a119af1814b758c0fa98d9a0a73"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -438,6 +438,36 @@ files = [
 ]
 
 [[package]]
+name = "griffe"
+version = "1.3.1"
+requires_python = ">=3.8"
+summary = "Signatures for entire Python programs. Extract the structure, the frame, the skeleton of your project, to generate API documentation or find breaking changes in your API."
+groups = ["docs"]
+dependencies = [
+    "astunparse>=1.6; python_version < \"3.9\"",
+    "colorama>=0.4",
+]
+files = [
+    {file = "griffe-1.3.1-py3-none-any.whl", hash = "sha256:940aeb630bc3054b4369567f150b6365be6f11eef46b0ed8623aea96e6d17b19"},
+    {file = "griffe-1.3.1.tar.gz", hash = "sha256:3f86a716b631a4c0f96a43cb75d05d3c85975003c20540426c0eba3b0581c56a"},
+]
+
+[[package]]
+name = "griffe-typingdoc"
+version = "0.2.7"
+requires_python = ">=3.8"
+summary = "Griffe extension for PEP 727 – Documentation Metadata in Typing."
+groups = ["docs"]
+dependencies = [
+    "griffe>=0.49",
+    "typing-extensions>=4.7",
+]
+files = [
+    {file = "griffe_typingdoc-0.2.7-py3-none-any.whl", hash = "sha256:74a825df32fc87fcae2f221df5c5524dca23155cd3c04ec9fa46493669d3cf54"},
+    {file = "griffe_typingdoc-0.2.7.tar.gz", hash = "sha256:800841e99f8844ea3c1fae80b19bede7d8eed4195a2586f5db753f7a73f4931d"},
+]
+
+[[package]]
 name = "h11"
 version = "0.14.0"
 requires_python = ">=3.7"
@@ -741,6 +771,22 @@ files = [
 ]
 
 [[package]]
+name = "mkdocs-autorefs"
+version = "1.2.0"
+requires_python = ">=3.8"
+summary = "Automatically link across pages in MkDocs."
+groups = ["docs"]
+dependencies = [
+    "Markdown>=3.3",
+    "markupsafe>=2.0.1",
+    "mkdocs>=1.1",
+]
+files = [
+    {file = "mkdocs_autorefs-1.2.0-py3-none-any.whl", hash = "sha256:d588754ae89bd0ced0c70c06f58566a4ee43471eeeee5202427da7de9ef85a2f"},
+    {file = "mkdocs_autorefs-1.2.0.tar.gz", hash = "sha256:a86b93abff653521bda71cf3fc5596342b7a23982093915cb74273f67522190f"},
+]
+
+[[package]]
 name = "mkdocs-get-deps"
 version = "0.2.0"
 requires_python = ">=3.8"
@@ -804,6 +850,61 @@ dependencies = [
 files = [
     {file = "mkdocs_pymdownx_material_extras-2.5.6-py3-none-any.whl", hash = "sha256:ed5bfc23c6f42f485603e05abc22926c27c2b31ef9972a0132582b73f49557e9"},
     {file = "mkdocs_pymdownx_material_extras-2.5.6.tar.gz", hash = "sha256:e0cf0aa4f284a78ecab9caf0bc62a12d8b836a5abbd49f9638cc03b2698a021c"},
+]
+
+[[package]]
+name = "mkdocstrings"
+version = "0.26.1"
+requires_python = ">=3.8"
+summary = "Automatic documentation from sources, for MkDocs."
+groups = ["docs"]
+dependencies = [
+    "Jinja2>=2.11.1",
+    "Markdown>=3.6",
+    "MarkupSafe>=1.1",
+    "click>=7.0",
+    "importlib-metadata>=4.6; python_version < \"3.10\"",
+    "mkdocs-autorefs>=1.2",
+    "mkdocs>=1.4",
+    "platformdirs>=2.2",
+    "pymdown-extensions>=6.3",
+    "typing-extensions>=4.1; python_version < \"3.10\"",
+]
+files = [
+    {file = "mkdocstrings-0.26.1-py3-none-any.whl", hash = "sha256:29738bfb72b4608e8e55cc50fb8a54f325dc7ebd2014e4e3881a49892d5983cf"},
+    {file = "mkdocstrings-0.26.1.tar.gz", hash = "sha256:bb8b8854d6713d5348ad05b069a09f3b79edbc6a0f33a34c6821141adb03fe33"},
+]
+
+[[package]]
+name = "mkdocstrings-python"
+version = "1.11.1"
+requires_python = ">=3.8"
+summary = "A Python handler for mkdocstrings."
+groups = ["docs"]
+dependencies = [
+    "griffe>=0.49",
+    "mkdocs-autorefs>=1.2",
+    "mkdocstrings>=0.26",
+]
+files = [
+    {file = "mkdocstrings_python-1.11.1-py3-none-any.whl", hash = "sha256:a21a1c05acef129a618517bb5aae3e33114f569b11588b1e7af3e9d4061a71af"},
+    {file = "mkdocstrings_python-1.11.1.tar.gz", hash = "sha256:8824b115c5359304ab0b5378a91f6202324a849e1da907a3485b59208b797322"},
+]
+
+[[package]]
+name = "mkdocstrings"
+version = "0.26.1"
+extras = ["python"]
+requires_python = ">=3.8"
+summary = "Automatic documentation from sources, for MkDocs."
+groups = ["docs"]
+dependencies = [
+    "mkdocstrings-python>=0.5.2",
+    "mkdocstrings==0.26.1",
+]
+files = [
+    {file = "mkdocstrings-0.26.1-py3-none-any.whl", hash = "sha256:29738bfb72b4608e8e55cc50fb8a54f325dc7ebd2014e4e3881a49892d5983cf"},
+    {file = "mkdocstrings-0.26.1.tar.gz", hash = "sha256:bb8b8854d6713d5348ad05b069a09f3b79edbc6a0f33a34c6821141adb03fe33"},
 ]
 
 [[package]]
@@ -1448,7 +1549,7 @@ name = "typing-extensions"
 version = "4.12.2"
 requires_python = ">=3.8"
 summary = "Backported and Experimental Type Hints for Python 3.8+"
-groups = ["dev"]
+groups = ["dev", "docs"]
 files = [
     {file = "typing_extensions-4.12.2-py3-none-any.whl", hash = "sha256:04e5ca0351e0f3f85c6853954072df659d0d13fac324d0072316b67d7794700d"},
     {file = "typing_extensions-4.12.2.tar.gz", hash = "sha256:1a7ead55c7e559dd4dee8856e3a88b41225abfe1ce8df57b7c13915fe121ffb8"},

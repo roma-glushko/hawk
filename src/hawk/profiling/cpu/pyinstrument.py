@@ -18,7 +18,8 @@ from datetime import datetime
 from enum import Enum
 from threading import Lock
 from dataclasses import dataclass
-from typing import Generator, Protocol, Mapping
+from typing import Generator, Protocol, Mapping, Annotated
+from typing_extensions import Doc
 
 from hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
 from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
@@ -63,16 +64,34 @@ class ProfileOptions:
 
 
 class PyInstrumentProfiler:
+    """
+    A profile based on [pyinstrument](https://pyinstrument.readthedocs.io/en/latest/home.html).
+
+    **Example**
+
+    ```python
+    profiler = PyInstrumentProfiler()
+    ```
+    """
     def __init__(self) -> None:
         self._profiler_lock = Lock()
         self._curr_profiler: "pyinstrument.Profiler" | None = None
 
     @property
-    def is_profiling(self) -> bool:
+    def is_profiling(self) -> Annotated[bool, Doc("Is profiling right now?")]:
+        """
+        Returns whether the profiler is currently profiling.
+        """
         return bool(self._curr_profiler)
 
     @contextmanager
-    def profile(self, opt: ProfileOptions) -> Generator["pyinstrument.Profiler"]:
+    def profile(
+        self,
+        opt: Annotated[ProfileOptions, Doc("Profiler Options")]
+    ) -> Generator[Annotated["pyinstrument.Profiler", Doc("Profiler Instance")], None, None]:
+        """
+        Context manager to profile a block of code.
+        """
         profiler = self.start(opt)
 
         try:
@@ -82,7 +101,7 @@ class PyInstrumentProfiler:
 
     def start(
         self,
-        opt: ProfileOptions,
+        opt: Annotated[ProfileOptions, Doc("Profiler Options")]
     ) -> "pyinstrument.Profiler":
         if self._curr_profiler:
             raise ProfilingAlreadyStarted("Profiler is already started")

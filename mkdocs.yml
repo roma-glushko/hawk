@@ -42,6 +42,13 @@ edit_uri: ''
 
 plugins:
 - search
+- mkdocstrings:
+    # https://mkdocstrings.github.io/
+    handlers:
+        python:
+          options:
+            extensions:
+            - griffe_typingdoc
 
 markdown_extensions:
   # Python Markdown
@@ -100,3 +107,5 @@ nav:
   - FastAPI: integrations/fastapi.md
   - Starlette: integrations/starlette.md
   - Flask: integrations/flask.md
+- Reference:
+  - Profiling: reference/profiling.md

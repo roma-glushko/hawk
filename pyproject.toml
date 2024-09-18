@@ -20,6 +20,8 @@ docs = [
     "mdx-include>=1.4.2",
     "mkautodoc>=0.2.0",
     "mkdocs-pymdownx-material-extras>=2.5.6",
+    "mkdocstrings[python]>=0.26.1",
+    "griffe-typingdoc>=0.2.7",
 ]
 
 [build-system]
