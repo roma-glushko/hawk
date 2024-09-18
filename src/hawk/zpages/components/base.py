@@ -34,7 +34,7 @@ class ZComponent(ABC):
     def to_json(self) -> dict[str, Any]:
         ...
 
-class NoOpComponent(ZComponent):
+class ZNoOpComponent(ZComponent):
     def to_html(self) -> str:
         return ""
 

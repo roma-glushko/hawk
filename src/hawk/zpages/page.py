@@ -51,6 +51,8 @@ class ZPage:
         self.description = description
         self.theme_color = theme_color or THEME_COLOR
 
+        self.auto_refresh: int | None = None # seconds
+
         self.header = ZHeader(title, description)
         self.main_container = ZMainContainer()
 
@@ -99,6 +101,7 @@ class ZPage:
             title=self.title,
             description=self.description,
             theme_color=self.theme_color.value,
+            auto_refresh=self.auto_refresh,
             content="".join(html_parts),
         )
 

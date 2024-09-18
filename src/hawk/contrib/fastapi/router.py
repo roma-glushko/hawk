@@ -24,6 +24,7 @@ from hawk.zpages import ZPageFormat
 
 try:
     from fastapi import APIRouter, Response
+    from fastapi.responses import JSONResponse, HTMLResponse
 except ImportError as e:
     raise ImportError(
         "FastAPI is required to use the hawk.contrib.fastapi packages. "
@@ -150,7 +151,7 @@ def get_router(
             return format_response(profile)
 
     @router.get("/{page_route:path}/")
-    async def get_zpage(page_route: str, format: ZPageFormat) -> Response:
+    async def get_zpage(page_route: str, format: ZPageFormat = ZPageFormat.HTML, refresh: int | None = None) -> Response:
         try:
             zpage = zpages.get_page(page_route)
         except zpages.ZPageNotFound:
@@ -159,12 +160,14 @@ def get_router(
                 content=f"ZPage not found (available pages: {zpages.get_page_routes()})",
             )
 
+        zpage.auto_refresh = refresh
+
         content = zpage.render(format)
 
         if format == ZPageFormat.JSON:
-            return Response(content=content, media_type="application/json")
+            return JSONResponse(content=content)
 
         # HTML rendering
-        return Response(content=content, media_type="text/html")
+        return HTMLResponse(content=content)
 
     return router
