@@ -16,9 +16,11 @@ from __future__ import annotations
 import asyncio
 from enum import Enum
 
+from hawk import zpages
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
 from hawk.contrib.starlette.response import format_response
+from hawk.zpages import ZPageFormat
 
 try:
     from fastapi import APIRouter, Response
@@ -146,5 +148,23 @@ def get_router(
             profile = renderer.render(profiler)
 
             return format_response(profile)
+
+    @router.get("/{page_route:path}/")
+    async def get_zpage(page_route: str, format: ZPageFormat) -> Response:
+        try:
+            zpage = zpages.get_page(page_route)
+        except zpages.ZPageNotFound:
+            return Response(
+                status_code=404,
+                content=f"ZPage not found (available pages: {zpages.get_page_routes()})",
+            )
+
+        content = zpage.render(format)
+
+        if format == ZPageFormat.JSON:
+            return Response(content=content, media_type="application/json")
+
+        # HTML rendering
+        return Response(content=content, media_type="text/html")
 
     return router

@@ -26,7 +26,7 @@ from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 try:
     import pyinstrument
 except ModuleNotFoundError:
-    pyinstrument = None
+    pyinstrument = None # type: ignore[assignment]
 
 
 class ProfileFormat(str, Enum):
@@ -49,11 +49,12 @@ class ProfileOptions:
     @classmethod
     def from_query_params(cls, query_params: Mapping[str, str]) -> ProfileOptions:
         interval = float(query_params.get("interval", 0.001))
-        use_timing_thread = query_params.get("use_timing_thread", None)
         async_mode = AsyncModes(query_params.get("async_mode", AsyncModes.ENABLED))
 
-        if use_timing_thread is not None:
-            use_timing_thread = use_timing_thread.lower() in {"true", "1", "yes"}
+        use_timing_thread: bool | None = None
+
+        if use_thead := query_params.get("use_timing_thread", None):
+            use_timing_thread = use_thead.lower() in {"true", "1", "yes"}
 
         return ProfileOptions(
             interval=interval,

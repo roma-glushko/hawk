@@ -13,6 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+from enum import Enum
 from typing import Any
 
 from hawk.zpages.components.base import ZComponent, slugify
@@ -21,6 +22,9 @@ from hawk.zpages.components.header import ZHeader
 from hawk.zpages.templates import TEMPLATES, merge_json
 from hawk.zpages.theme import ThemeColor, THEME_COLOR
 
+class ZPageFormat(str, Enum):
+    HTML = "html"
+    JSON = "json"
 
 class ZPage:
     """
@@ -61,6 +65,24 @@ class ZPage:
         Add a new container to the page and return it.
         """
         return self.main_container.container()
+
+    def render(self, format: ZPageFormat) -> Any:
+        """
+        Render the page in the specified format.
+
+        Returns:
+            The rendered page content or JSON dict.
+
+        Raises:
+            ValueError: When the format is not supported.
+        """
+        if format == ZPageFormat.HTML:
+            return self.to_html()
+
+        if format == ZPageFormat.JSON:
+            return self.to_json()
+
+        raise ValueError(f"Unsupported format: {format}")
 
     def to_html(self) -> str:
         """
