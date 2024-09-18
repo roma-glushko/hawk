@@ -23,6 +23,18 @@ from hawk.zpages.theme import ThemeColor, THEME_COLOR
 
 
 class ZPage:
+    """
+    A high-level page container that holds all other page components.
+    The components are rendered in the order they were added.
+
+    ZPage can render its content hierarchy to HTML and JSON.
+
+    **Example**
+
+    ```python
+
+    ```
+    """
     def __init__(
         self,
         title: str,
@@ -39,13 +51,21 @@ class ZPage:
         self.main_container = ZMainContainer()
 
     def add(self, component: ZComponent) -> None:
+        """
+        Add a new component to the page.
+        """
         self.main_container.add(component)
 
     def container(self) -> ZContainer:
-        """Returns a new container"""
+        """
+        Add a new container to the page and return it.
+        """
         return self.main_container.container()
 
     def to_html(self) -> str:
+        """
+        Render the page as HTML. This is a human-friendly representation of the page.
+        """
         html_parts: list[str] = [
             self.header.to_html(),
             self.main_container.to_html(),
@@ -61,6 +81,9 @@ class ZPage:
         )
 
     def to_json(self) -> dict[str, Any]:
+        """
+        Render the page as JSON. This is useful for automations and any other machine-readable processing.
+        """
         json_parts: list[dict[str, Any]] = [
             {
                 "id": self.id,

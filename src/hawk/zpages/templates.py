@@ -50,3 +50,11 @@ class Jinja2Templates:
 
 
 TEMPLATES = Jinja2Templates(jinja2.FileSystemLoader(TEMPLATES_PATH))
+
+def set_templates(templates: Jinja2Templates) -> None:
+    """
+    Override the default Jinja2 Templates Renderer
+    """
+    global TEMPLATES
+
+    TEMPLATES = templates
