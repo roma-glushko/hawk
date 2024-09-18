@@ -17,82 +17,61 @@ import asyncio
 from typing import Sequence
 
 from starlette.applications import Request, Response
-from starlette.responses import StreamingResponse
 from starlette.routing import Router, BaseRoute, Middleware
 
-from src.hawk.profiling.mem.tracemalloc import ProfileFormat, profiler as mem_profiler
+import hawk.profiling.mem.tracemalloc as trmalloc
+from hawk.contrib.starlette.response import format_response
 
 
-async def profile_memory(request: Request) -> Response:
+async def profile_memory_tracemalloc(request: Request) -> Response:
     duration = int(request.query_params.get("duration", 5))
     frames = int(request.query_params.get("frames", 30))
+    gc = request.query_params.get("gc", "true").lower() in ["true", "1"]
     count = int(request.query_params.get("count", 10))
-    format = ProfileFormat(request.query_params.get("format", ProfileFormat.LINENO))
+    format = trmalloc.ProfileFormat(request.query_params.get("format", trmalloc.ProfileFormat.LINENO))
     cumulative = request.query_params.get("cumulative", "false").lower() in ["true", "1"]
 
-    mem_profiler.start(frames=frames)
+    opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
 
-    try:
-        heap_usage1, snapshot1 = mem_profiler.snapshot()
+    with trmalloc.profiler.profile(opt) as profile:
         await asyncio.sleep(duration)
-        heap_usage2, snapshot2 = mem_profiler.snapshot()
-    finally:
-        mem_profiler.stop()
 
-    renderer = mem_profiler.get_renderer(format)
+    render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
+    renderer = trmalloc.get_renderer(format)
 
-    if format == ProfileFormat.PICKLE:
-        return StreamingResponse(
-            content=renderer.render(snapshot2),
-            headers=renderer.headers()
-        )
+    rendered_profile = renderer.render(profile, render_opt)
 
-    return Response(
-        content=renderer.render(
-            snapshot2,
-            heap_usage2,
-            snapshot1,
-            heap_usage1,
-            count,
-            cumulative
-        ),
-        headers=renderer.headers(),
-    )
+    return format_response(rendered_profile)
 
-async def start_manual_memory_profile(request: Request) -> Response:
+
+async def start_manual_memory_tracemalloc_profile(request: Request) -> Response:
     frames = int(request.query_params.get("frames", 30))
+    gc = request.query_params.get("gc", "true").lower() in ["true", "1"]
 
-    mem_profiler.start(frames=frames)
+    opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
+
+    trmalloc.profiler.start(opt)
 
     return Response(content="Memory profiling started")
 
-async def snapshot_memory_manually(request: Request) -> Response:
+
+async def snapshot_memory_tracemalloc_manually(request: Request) -> Response:
     count = int(request.query_params.get("count", 10))
-    format = ProfileFormat(request.query_params.get("format", ProfileFormat.LINENO))
+    format = trmalloc.ProfileFormat(request.query_params.get("format", trmalloc.ProfileFormat.LINENO))
     cumulative = request.query_params.get("cumulative", "false").lower() in ["true", "1"]
 
-    heap_usage, snapshot = mem_profiler.snapshot()
+    profile = trmalloc.profiler.snapshot()
 
-    renderer = mem_profiler.get_renderer(format)
+    opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
+    renderer = trmalloc.get_renderer(format)
 
-    if format == ProfileFormat.PICKLE:
-        return StreamingResponse(
-            content=renderer.render(snapshot),
-            headers=renderer.headers()
-        )
+    profile_content = renderer.render(profile, opt)
 
-    return Response(
-        content=renderer.render(
-            snapshot,
-            heap_usage,
-            count,
-            cumulative
-        ),
-        headers=renderer.headers(),
-    )
+    return format_response(profile_content)
 
-async def stop_manual_memory_profile(request: Request) -> Response:
-    mem_profiler.stop()
+
+async def stop_manual_memory_tracemalloc_profile(request: Request) -> Response:
+    trmalloc.profiler.stop()
 
     return Response(content="Memory profiling stopped")
 
@@ -109,9 +88,9 @@ def get_router(
         middleware=middleware,
     )
 
-    router.add_route('/prof/mem/', profile_memory, methods=['GET'])
-    router.add_route('/prof/mem/start/', start_manual_memory_profile, methods=['GET'])
-    router.add_route('/prof/mem/snapshot/', snapshot_memory_manually, methods=['GET'])
-    router.add_route('/prof/mem/stop/', stop_manual_memory_profile, methods=['GET'])
+    router.add_route('/prof/mem/tracemalloc/', profile_memory_tracemalloc, methods=['GET'])
+    router.add_route('/prof/mem/tracemalloc/start/', start_manual_memory_tracemalloc_profile, methods=['GET'])
+    router.add_route('/prof/mem/tracemalloc/snapshot/', snapshot_memory_tracemalloc_manually, methods=['GET'])
+    router.add_route('/prof/mem/tracemalloc/stop/', stop_manual_memory_tracemalloc_profile, methods=['GET'])
 
     return router

@@ -1,0 +1,22 @@
+[project]
+name = "fastapi-example"
+version = "0.0.1"
+description = "Default template for PDM package"
+authors = [
+    {name = "Roman Hlushko", email = "roman.glushko.m@gmail.com"},
+]
+dependencies = [
+    "fastapi[standard]>=0.114.0",
+    # pdm add ../../.[pyinstrument]
+    "hawk-debug[pyinstrument] @ file:///${PROJECT_ROOT}/../..",
+]
+requires-python = "==3.12.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[project.optional-dependencies]
+pyinstrument = [
+]
+[tool.pdm]
+distribution = false

@@ -23,9 +23,10 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Any, Iterator, TypedDict, List, Union, Protocol, Generator
+from typing import Any, Iterator, TypedDict, List, Union, Generator, Protocol, Mapping
 
-from src.hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 
 def format_bytes(value: int) -> str:
@@ -53,6 +54,17 @@ class ProfileFormat(str, Enum):
 class ProfileOptions:
     gc: bool = True
     frames: int = 30
+
+    def __post_init__(self):
+        if self.frames < 1:
+            raise ValueError("Frames should be greater than 0")
+
+    @classmethod
+    def from_query_params(cls, query_params: Mapping[str, str]) -> ProfileOptions:
+        return cls(
+            gc=query_params.get("gc", "1").lower() in {"1", "true", "yes"},
+            frames=int(query_params.get("frames", "30")),
+        )
 
 
 @dataclass
@@ -100,6 +112,13 @@ class PointInTimeProfile:
 class RendererOptions:
     count: int = 10
     cumulative: bool = False
+
+    @classmethod
+    def from_query_params(cls, query_params: Mapping[str, str]) -> RendererOptions:
+        return cls(
+            count=int(query_params.get("count", "10")),
+            cumulative=query_params.get("cumulative", "0").lower() in {"1", "true", "yes"},
+        )
 
 
 class HeapUsage(TypedDict):
@@ -173,19 +192,18 @@ class TracemallocProfiler:
 class Renderer(Protocol):
     file_ext: str
 
-    def get_file_name(self) -> str:
-        ...
-
     def render(
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions
-    ) -> Any:
+    ) -> RenderedProfile:
         ...
 
 
 class LinenoSnapshotRenderer:
+    mime_type: MimeType = MimeType.JSON
     file_ext: str = "json"
+    render_mode: RenderMode = RenderMode.VIEW
 
     def get_file_name(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -196,7 +214,7 @@ class LinenoSnapshotRenderer:
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
-    ) -> dict[str, Any]:
+    ) -> RenderedProfile:
         if isinstance(profile, PointInTimeProfile):
             return self._render_point_in_time_profile(profile, opt.count, opt.cumulative)
 
@@ -213,7 +231,7 @@ class LinenoSnapshotRenderer:
         profile: PointInTimeProfile,
         count: int = 10,
         cumulative: bool = False,
-    ) -> dict[str, Any]:
+    ) -> RenderedProfile:
         top_stats = profile.snapshot.statistics("lineno", cumulative=cumulative)
 
         heap_usage = {
@@ -221,17 +239,22 @@ class LinenoSnapshotRenderer:
             "heap_current": format_bytes(profile.heap_usage_bytes),
         }
 
-        return {
-            "stats": list(self._format_lineno(top_stats, count=count)),
-            **heap_usage,
-        }
+        return RenderedProfile(
+            file_name=self.get_file_name(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content={
+                "stats": list(self._format_lineno(top_stats, count=count)),
+                **heap_usage,
+            },
+        )
 
     def _render_interval_profile(
         self,
         profile: IntervalProfile,
         count: int = 10,
         cumulative: bool = False,
-    ) -> dict[str, Any]:
+    ) -> RenderedProfile:
         top_stats = profile.stop_snapshot.compare_to(
             profile.start_snapshot,
             "lineno",
@@ -247,10 +270,15 @@ class LinenoSnapshotRenderer:
             "heap_diff": format_bytes(heap_diff_bytes),
         }
 
-        return {
-            "stats": list(self._format_lineno(top_stats, count=count)),
-            **heap_usage,
-        }
+        return RenderedProfile(
+            file_name=self.get_file_name(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content={
+                "stats": list(self._format_lineno(top_stats, count=count)),
+                **heap_usage,
+            },
+        )
 
     def _format_lineno(self, top_stats: AnyStats, count: int = 10) -> Iterator[dict[str, Any]]:
         for stat in top_stats[:count]:
@@ -270,7 +298,9 @@ class LinenoSnapshotRenderer:
 
 
 class TracebackSnapshotRender:
+    mime_type: MimeType = MimeType.JSON
     file_ext: str = "json"
+    render_mode: RenderMode = RenderMode.VIEW
 
     def get_file_name(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
@@ -281,7 +311,7 @@ class TracebackSnapshotRender:
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
-    ) -> dict[str, Any]:
+    ) -> RenderedProfile:
         """
         Render the snapshot in a human-readable format
         """
@@ -300,7 +330,7 @@ class TracebackSnapshotRender:
         self,
         profile: PointInTimeProfile,
         count: int = 10,
-    ) -> dict[str, Any]:
+    ) -> RenderedProfile:
         top_stats = profile.snapshot.statistics("traceback")
 
         heap_usage = {
@@ -308,16 +338,21 @@ class TracebackSnapshotRender:
             "heap_current": format_bytes(profile.heap_usage_bytes),
         }
 
-        return {
-            "stats": list(self._format_traceback(top_stats, count=count)),
-            **heap_usage,
-        }
+        return RenderedProfile(
+            file_name=self.get_file_name(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content={
+                "stats": list(self._format_traceback(top_stats, count=count)),
+                **heap_usage,
+            },
+        )
 
     def _render_interval_profile(
         self,
         profile: IntervalProfile,
         count: int = 10,
-    ) -> dict[str, Any]:
+    ) -> RenderedProfile:
         top_stats = profile.stop_snapshot.compare_to(
             profile.start_snapshot,
             "traceback",
@@ -332,10 +367,15 @@ class TracebackSnapshotRender:
             "heap_diff": format_bytes(heap_diff_bytes),
         }
 
-        return {
-            "stats": list(self._format_traceback(top_stats, count=count)),
-            **heap_usage,
-        }
+        return RenderedProfile(
+            file_name=self.get_file_name(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content={
+                "stats": list(self._format_traceback(top_stats, count=count)),
+                **heap_usage,
+            },
+        )
 
     def _format_traceback(self, top_stats: AnyStats, count: int = 10) -> Iterator[dict[str, Any]]:
         for stat in top_stats[:count]:
@@ -348,14 +388,20 @@ class TracebackSnapshotRender:
 
 
 class PickleSnapshotRenderer:
+    mime_type: MimeType = MimeType.BINARY
     file_ext: str = "pkl"
+    render_mode: RenderMode = RenderMode.DOWNLOAD
 
     def get_file_name(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         return f"hwk_mem_tracemalloc_snapshot_{timestamp}.{self.file_ext}"
 
-    def render(self, profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy, opt: RendererOptions) -> io.BytesIO:
+    def render(
+        self,
+        profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
+        opt: RendererOptions,
+    ) -> RenderedProfile:
         """
         Pickling the snapshot class to be able to analyze it later via loading it with `Snapshot.load()`
         """
@@ -379,7 +425,12 @@ class PickleSnapshotRenderer:
 
         snapshot_content.seek(0)
 
-        return snapshot_content
+        return RenderedProfile(
+            file_name=self.get_file_name(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=snapshot_content.getvalue(),
+        )
 
 
 PROFILE_RENDERERS: dict[str, Renderer] = {
@@ -397,3 +448,27 @@ def get_renderer(format: ProfileFormat) -> Renderer:
 
 
 profiler = TracemallocProfiler()
+
+
+class ProfileHandler:
+    def __init__(self, query_params: Mapping[str, str]) -> None:
+        self._opt = ProfileOptions.from_query_params(query_params)
+        self._renderer_opt = RendererOptions.from_query_params(query_params)
+        self._format = ProfileFormat(query_params.get("format", ProfileFormat.LINENO))
+
+        self._interval_profile: IntervalProfileProxy | None = None
+
+    @contextmanager
+    def profile(self) -> Generator[None, None, None]:
+        with profiler.profile(self._opt) as profile_proxy:
+            self._interval_profile = profile_proxy
+            yield
+
+    def render_profile(self) -> RenderedProfile:
+        if self._interval_profile is None:
+            raise RuntimeError("Interval profile is not set")
+
+        return get_renderer(self._format).render(
+            self._interval_profile,
+            self._renderer_opt,
+        )

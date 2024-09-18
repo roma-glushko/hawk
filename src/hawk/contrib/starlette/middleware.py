@@ -18,6 +18,9 @@ from starlette.requests import Request
 from starlette.responses import Response
 from starlette.types import ASGIApp
 
+from hawk.contrib.starlette.response import format_response
+from hawk.profiling.profilers import get_profiler, ProfilerType
+
 
 class DebugMiddleware(BaseHTTPMiddleware):
     def __init__(
@@ -35,7 +38,9 @@ class DebugMiddleware(BaseHTTPMiddleware):
         if not self._enabled:
             return await call_next(request)
 
-        debug_enabled = request.get("debug") or False # bool or str
+        query_params = request.query_params
+
+        debug_enabled = query_params.get("debug") or False  # bool or str
 
         if not debug_enabled:
             # ignore the request if debug is disabled
@@ -46,19 +51,20 @@ class DebugMiddleware(BaseHTTPMiddleware):
             # TODO: consider logging
             return await call_next(request)
 
-        profiler = request.get("profiler")
+        profiler_type = query_params.get("profiler")
 
-        if profiler is None:
-            # ignore the request if profiler is not set, don't play guessing game
+        if profiler_type is None:
+            # ignore the request if profiler is not set, don't play a guessing game
             # TODO: consider logging
             return await call_next(request)
 
-        # TODO: get the profile, validate params and start profiling
+        profiler = get_profiler(ProfilerType(profiler_type))(query_params)
 
-        try:
-            response = await call_next(request)
-        finally:
-            # TODO: finalize profiling and return the profile as a response
-            ...
+        # TODO: in case of error we may want to get profile rather than the error response,
+        #  let users decide what they want
+        with profiler.profile():
+            _ = await call_next(request)
 
-        return response
+        rendered_profile = profiler.render_profile()
+
+        return format_response(rendered_profile)

@@ -17,7 +17,7 @@ import time
 
 from flask import Blueprint, request, Response
 
-from src.hawk.profiling.mem.tracemalloc import ProfileFormat, profiler as mem_profiler
+from hawk.profiling.mem.tracemalloc import ProfileFormat, profiler as mem_profiler
 
 
 def create_debug_blueprint(

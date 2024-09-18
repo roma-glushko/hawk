@@ -11,6 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from src.hawk.contrib.starlette.middleware import DebugMiddleware
+from __future__ import annotations
 
-__all__ = ("DebugMiddleware",)
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any
+
+
+class RenderMode(str, Enum):
+    VIEW = "view"
+    DOWNLOAD = "download"
+
+
+class MimeType(str, Enum):
+    JSON = "application/json"
+    HTML = "text/html"
+    BINARY = "application/octet-stream"
+
+
+@dataclass
+class RenderedProfile:
+    file_name: str
+    mime_type: MimeType
+    render_mode: RenderMode
+    content: bytes | str | dict[str, Any]

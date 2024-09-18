@@ -18,17 +18,15 @@ from datetime import datetime
 from enum import Enum
 from threading import Lock
 from dataclasses import dataclass
-from typing import Protocol, Generator
+from typing import Generator, Protocol, Mapping
 
-from src.hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
-
-PYINSTRUMENT_INSTALLED: bool = True
+from hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
+from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 try:
-    from pyinstrument import Profiler
-    from pyinstrument import renderers as pyinstr_renderers
-except ImportError:
-    PYINSTRUMENT_INSTALLED = False
+    import pyinstrument
+except ModuleNotFoundError:
+    pyinstrument = None
 
 
 class ProfileFormat(str, Enum):
@@ -48,19 +46,34 @@ class ProfileOptions:
     use_timing_thread: bool | None = None
     async_mode: AsyncModes = AsyncModes.ENABLED
 
+    @classmethod
+    def from_query_params(cls, query_params: Mapping[str, str]) -> ProfileOptions:
+        interval = float(query_params.get("interval", 0.001))
+        use_timing_thread = query_params.get("use_timing_thread", None)
+        async_mode = AsyncModes(query_params.get("async_mode", AsyncModes.ENABLED))
+
+        if use_timing_thread is not None:
+            use_timing_thread = use_timing_thread.lower() in {"true", "1", "yes"}
+
+        return ProfileOptions(
+            interval=interval,
+            use_timing_thread=use_timing_thread,
+            async_mode=async_mode,
+        )
+
 
 class PyInstrumentProfiler:
     def __init__(self) -> None:
         self._profiler_lock = Lock()
-        self._curr_profiler: "Profiler" | None = None
+        self._curr_profiler: "pyinstrument.Profiler" | None = None
 
     @property
     def is_profiling(self) -> bool:
         return bool(self._curr_profiler)
 
     @contextmanager
-    def profile(self, config: ProfileOptions) -> Generator["Profiler"]:
-        profiler = self.start(config)
+    def profile(self, opt: ProfileOptions) -> Generator["pyinstrument.Profiler"]:
+        profiler = self.start(opt)
 
         try:
             yield profiler
@@ -69,24 +82,24 @@ class PyInstrumentProfiler:
 
     def start(
         self,
-        config: ProfileOptions,
-    ) -> "Profiler":
+        opt: ProfileOptions,
+    ) -> "pyinstrument.Profiler":
         if self._curr_profiler:
             raise ProfilingAlreadyStarted("Profiler is already started")
 
         with self._profiler_lock:
             # https://pyinstrument.readthedocs.io/en/latest/guide.html#profile-a-web-request-in-fastapi
-            profiler = Profiler(
-                interval=config.interval,
-                use_timing_thread=config.use_timing_thread,
-                async_mode=config.async_mode,
+            profiler = pyinstrument.Profiler(
+                interval=opt.interval,
+                use_timing_thread=opt.use_timing_thread,
+                async_mode=opt.async_mode,
             )
             profiler.start()
             self._curr_profiler = profiler
 
         return self._curr_profiler
 
-    def stop(self) -> "Profiler":
+    def stop(self) -> "pyinstrument.Profiler":
         if not self._curr_profiler:
             raise ProfilingNotStarted("Profiler is not started yet")
 
@@ -101,58 +114,89 @@ class PyInstrumentProfiler:
 
 
 class Renderer(Protocol):
-    file_ext: str
-
-    def get_filename(self) -> str:
-        ...
-
-    def render(self, profiler: Profiler) -> str:
+    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
         ...
 
 
 class JSONRenderer:
+    mime_type: MimeType = MimeType.JSON
     file_ext: str = "json"
+    render_mode: RenderMode = RenderMode.DOWNLOAD
 
     def __init__(self):
-        self._renderer = pyinstr_renderers.JSONRenderer()
+        if pyinstrument is None:
+            raise ImportError("pyinstrument is not installed")
+
+        self._renderer = pyinstrument.renderers.JSONRenderer()
 
     def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
-    def render(self, profiler: Profiler) -> str:
-        return profiler.output(renderer=self._renderer)
+    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+        content = profiler.output(renderer=self._renderer)
+
+        return RenderedProfile(
+            file_name=self.get_filename(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=content,
+        )
 
 
 class HTMLRenderer:
+    mime_type: MimeType = MimeType.HTML
     file_ext: str = "html"
+    render_mode: RenderMode = RenderMode.VIEW
 
     def __init__(self):
-        self._renderer = pyinstr_renderers.HTMLRenderer()
+        if pyinstrument is None:
+            raise ImportError("pyinstrument is not installed")
+
+        self._renderer = pyinstrument.renderers.HTMLRenderer()
 
     def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
-    def render(self, profiler: Profiler) -> str:
-        return profiler.output(renderer=self._renderer)
+    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+        content = profiler.output(renderer=self._renderer)
+
+        return RenderedProfile(
+            file_name=self.get_filename(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=content,
+        )
 
 
 class SpeedscopeRenderer:
+    mime_type: MimeType = MimeType.JSON
     file_ext: str = "speedscope.json"
+    render_mode: RenderMode = RenderMode.DOWNLOAD
 
     def __init__(self):
-        self._renderer = pyinstr_renderers.SpeedscopeRenderer()
+        if pyinstrument is None:
+            raise ImportError("pyinstrument is not installed")
+
+        self._renderer = pyinstrument.renderers.SpeedscopeRenderer()
 
     def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
 
-    def render(self, profiler: Profiler) -> str:
-        return profiler.output(renderer=self._renderer)
+    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+        content = profiler.output(renderer=self._renderer)
+
+        return RenderedProfile(
+            file_name=self.get_filename(),
+            mime_type=self.mime_type,
+            render_mode=self.render_mode,
+            content=content,
+        )
 
 
 PROFILE_RENDERERS: dict[ProfileFormat, Renderer] = {
@@ -170,3 +214,28 @@ def get_renderer(format: ProfileFormat) -> Renderer:
 
 
 profiler = PyInstrumentProfiler()
+
+
+class ProfileHandler:
+    def __init__(self, query_params: Mapping[str, str]) -> None:
+        if pyinstrument is None:
+            raise ImportError("pyinstrument is not installed")
+
+        self._opt = ProfileOptions.from_query_params(query_params)
+        self._format = ProfileFormat(query_params.get("format", ProfileFormat.HTML))
+
+        self._profiler: "pyinstrument.Profiler" | None = None
+
+    @contextmanager
+    def profile(self) -> Generator[None, None, None]:
+        with profiler.profile(self._opt) as p:
+            self._profiler = p
+            yield
+
+    def render_profile(self) -> RenderedProfile:
+        if not self._profiler:
+            raise ProfilingNotStarted("Profiler is not started yet")
+
+        renderer = get_renderer(self._format)
+
+        return renderer.render(self._profiler)
