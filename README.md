@@ -7,7 +7,7 @@
 🦅 Hawk gives you more control over how your Python microservices run in production
 with little overhead by bringing a set of internal API to help you to profile and debug your services.
 
-> [NOTE]
+> [!NOTE]
 >
 > 🚧 **This project is under active development and not ready for production use yet.** 🚧
 
