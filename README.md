@@ -15,6 +15,10 @@ Hawk is inspired by Go's `net/http/pprof` & `expvars` packages and
 OpenTelemetry Collector's ZPages which are in turn stemmed from Google's internal practices around
 debugging production services.
 
+> [!IMPORTANT]
+>
+> Be sure to start this project and wathch it if you find it helpful ⭐️
+
 ## Features
 
 - ⏱️ **Memory Profiling** via the `tracemalloc` stdlib
