@@ -28,5 +28,8 @@ jobs:
       - name: Publish Package
         run: make build
 
+      - name: Check Git Status
+        run: git status
+
       - name: Publish Package
         run: make publish
