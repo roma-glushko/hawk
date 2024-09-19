@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="assets/logo/hawk-debug_transparent_bg.png" width="300px" alt="Hawk Debug Toolkit For Python" />
+    <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/logo/hawk-debug_transparent_bg.png" width="300px" alt="Hawk Debug Toolkit For Python" />
     <h1>Hawk: Debug & Profile</h1>
     <p>A lightweight debugging & profiling toolkit <br/> for production 🐍 Python microservices</p>
 </div>
@@ -17,7 +17,7 @@ debugging production services.
 
 > [!IMPORTANT]
 >
-> Be sure to start this project and wathch it if you find it helpful ⭐️
+> Be sure to start this project and watch it if you find it helpful ⭐️
 
 ## Features
 
@@ -35,8 +35,8 @@ debugging production services.
 <div align="center">
     <p>Integrated With:</p>
     <p align="center">
-        <img src="assets/contrib/fastapi.png" width="150px" alt="FastAPI Logo" />
-        <img src="assets/contrib/starlette.svg" width="150px" alt="Starlette Logo" />
-        <img src="assets/contrib/flask.png" width="150px" alt="Flask Logo" />
+        <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/contrib/fastapi.png" width="150px" alt="FastAPI Logo" />
+        <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/contrib/starlette.svg" width="150px" alt="Starlette Logo" />
+        <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/contrib/flask.png" width="150px" alt="Flask Logo" />
     </p>
 </div>
