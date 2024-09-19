@@ -8,3 +8,4 @@ dist
 .coverage
 
 site
+src/hawk/version.py
