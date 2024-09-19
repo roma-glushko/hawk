@@ -1,8 +1,8 @@
 <header class="container">
     <nav>
         <ul>
-            <li>
-                <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/logo/hawk-debug.png?token=GHSAT0AAAAAACGZSHW4LMGXTFUCIBT2W7VCZVHSSYA" alt="Hawk Debug Logo">
+            <li class="page-description">
+                <img class="logo" loading="lazy" src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/logo/hawk-debug.png" alt="Hawk Debug Logo">
                 <hgroup>
                     <h1>{{ title }}</h1>
                     {% if description %}
@@ -14,3 +14,13 @@
         {% include "theme_toggle.html.j2" %}
     </nav>
 </header>
+<style>
+    .logo {
+        height: 4rem;
+        margin-right: 0.5rem;
+    }
+    .page-description {
+        display: flex;
+        align-items: center;
+    }
+</style>
