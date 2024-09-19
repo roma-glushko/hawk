@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html id="{{ id }}" lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{{ title }}</title>
+    {% if description %}
+    <meta name="description" content="{{ description }}" />
+    {% endif %}
+    {% if auto_refresh %}
+    <meta http-equiv="refresh" content="{{ auto_refresh }}" />
+    {% endif %}
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.{{ theme_color ~ '.' if theme_color else '' }}min.css"
+    />
+</head>
+<body>
+    <main class="container">
+    {{ content | safe }}
+    </main>
+    {% include "footer.html.j2" %}
+</body>
+</html>

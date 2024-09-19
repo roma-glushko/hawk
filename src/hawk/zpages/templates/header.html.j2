@@ -1,0 +1,16 @@
+<header class="container">
+    <nav>
+        <ul>
+            <li>
+                <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/logo/hawk-debug.png?token=GHSAT0AAAAAACGZSHW4LMGXTFUCIBT2W7VCZVHSSYA" alt="Hawk Debug Logo">
+                <hgroup>
+                    <h1>{{ title }}</h1>
+                    {% if description %}
+                    <p>{{ description }}</p>
+                    {% endif %}
+                </hgroup>
+            </li>
+        </ul>
+        {% include "theme_toggle.html.j2" %}
+    </nav>
+</header>

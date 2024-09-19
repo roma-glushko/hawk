@@ -13,14 +13,42 @@
 # limitations under the License.
 import asyncio
 import time
+from contextlib import asynccontextmanager
 
+from hawk import zpages
 from fastapi import FastAPI
 from pydantic import BaseModel
 
 from hawk.contrib.fastapi import DebugMiddleware, get_router
+from hawk.zpages.components import ZTable, TableStyle
+
+def create_test_zpage() -> zpages.ZPage:
+    zp = zpages.ZPage(
+        title="Test Page",
+        description="A test ZPage",
+    )
+
+    with zp.container() as c:
+        c.add(ZTable(
+            cols=["Property", "Value"],
+            rows=[
+                ["Name", "Test Page"],
+                ["Description", "A test ZPage"],
+                ["Author", "Roman Hlushko"],
+            ],
+            style=TableStyle.PROPERTY,
+        ))
+
+    return zp
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    zpages.add_page("test", create_test_zpage())
+    yield
 
 app = FastAPI(
     title="Hawk: FastAPI Example",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -43,7 +71,6 @@ async def busy_wait(duration):
 
     while time.time() < end_time:
         await asyncio.sleep(0.1)
-
 
 @app.get("/")
 async def welcome() -> WelcomeResponse:

@@ -2,10 +2,10 @@
 # It is not intended for manual editing.
 
 [metadata]
-groups = ["default", "dev", "docs", "pyinstrument"]
+groups = ["default", "dev", "docs", "pyinstrument", "zpages"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:a98bbd8c932fd1e804bab15d263a427c9669ccc031615be870282aae3faa14e9"
+content_hash = "sha256:d320d426996a14e142a9f4e20f14786011540a3690858294836e0238e87da193"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -576,7 +576,7 @@ name = "jinja2"
 version = "3.1.4"
 requires_python = ">=3.7"
 summary = "A very fast and expressive template engine."
-groups = ["dev", "docs"]
+groups = ["dev", "docs", "zpages"]
 dependencies = [
     "MarkupSafe>=2.0",
 ]
@@ -618,7 +618,7 @@ name = "markupsafe"
 version = "2.1.5"
 requires_python = ">=3.7"
 summary = "Safely add untrusted strings to HTML/XML markup."
-groups = ["dev", "docs"]
+groups = ["dev", "docs", "zpages"]
 files = [
     {file = "MarkupSafe-2.1.5-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:a17a92de5231666cfbe003f0e4b9b3a7ae3afb1ec2845aadc2bacc93ff85febc"},
     {file = "MarkupSafe-2.1.5-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:72b6be590cc35924b02c78ef34b467da4ba07e4e0f0454a2c5907f473fc50ce5"},

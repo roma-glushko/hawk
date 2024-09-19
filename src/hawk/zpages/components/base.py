@@ -11,3 +11,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from __future__ import annotations
+
+from typing import Any
+from abc import ABC, abstractmethod
+
+
+def slugify(text: str) -> str:
+    return text.lower().replace(" ", "-")
+
+
+class ZComponent(ABC):
+    """
+    This is a base class for all supported components.
+    """
+
+    @abstractmethod
+    def to_html(self) -> str:
+        ...
+
+    @abstractmethod
+    def to_json(self) -> dict[str, Any]:
+        ...
+
+class ZNoOpComponent(ZComponent):
+    def to_html(self) -> str:
+        return ""
+
+    def to_json(self) -> dict[str, Any]:
+        return {}

@@ -16,12 +16,15 @@ from __future__ import annotations
 import asyncio
 from enum import Enum
 
+from hawk import zpages
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
 from hawk.contrib.starlette.response import format_response
+from hawk.zpages import ZPageFormat
 
 try:
     from fastapi import APIRouter, Response
+    from fastapi.responses import JSONResponse, HTMLResponse
 except ImportError as e:
     raise ImportError(
         "FastAPI is required to use the hawk.contrib.fastapi packages. "
@@ -146,5 +149,25 @@ def get_router(
             profile = renderer.render(profiler)
 
             return format_response(profile)
+
+    @router.get("/{page_route:path}/")
+    async def get_zpage(page_route: str, format: ZPageFormat = ZPageFormat.HTML, refresh: int | None = None) -> Response:
+        try:
+            zpage = zpages.get_page(page_route)
+        except zpages.ZPageNotFound:
+            return Response(
+                status_code=404,
+                content=f"ZPage not found (available pages: {zpages.get_page_routes()})",
+            )
+
+        zpage.auto_refresh = refresh
+
+        content = zpage.render(format)
+
+        if format == ZPageFormat.JSON:
+            return JSONResponse(content=content)
+
+        # HTML rendering
+        return HTMLResponse(content=content)
 
     return router

@@ -1,0 +1,30 @@
+<div class="overflow-auto">
+    <table id="{{ id }}" class="{{ style }}">
+    <thead>
+    <tr>
+        {% for col in cols %}
+            <th scope="col">{{ col }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in rows %}
+        <tr>
+            {% for value in row %}
+            <th scope="row">{{ value }}</th>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% if style == "property-table" %}
+<style>
+    .property-table th:first-child,
+    .property-table td:first-child {
+        background-color: var(--pico-table-row-stripped-background-color);
+        font-weight: bold;
+        width: 30%;
+    }
+</style>
+{% endif %}
