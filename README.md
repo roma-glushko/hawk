@@ -36,20 +36,21 @@ pip install hawk-debug[yappi]          # multi-threaded CPU/wall time profiler
 
 ```python
 from fastapi import FastAPI
-from hawk.contrib.fastapi import HawkDebugRouter
+from hawk.contrib.fastapi import get_router
 
 app = FastAPI()
-app.include_router(HawkDebugRouter())
+app.include_router(get_router())
 ```
 
 ### Starlette
 
 ```python
 from starlette.applications import Starlette
-from hawk.contrib.starlette import HawkDebugRouter
+from starlette.routing import Mount
+from hawk.contrib.starlette import get_router
 
 app = Starlette(routes=[
-    HawkDebugRouter(),
+    Mount("/debug", app=get_router()),
 ])
 ```
 
@@ -57,10 +58,10 @@ app = Starlette(routes=[
 
 ```python
 from flask import Flask
-from hawk.contrib.flask import hawk_debug_blueprint
+from hawk.contrib.flask import create_debug_blueprint
 
 app = Flask(__name__)
-app.register_blueprint(hawk_debug_blueprint)
+app.register_blueprint(create_debug_blueprint(), url_prefix="/debug")
 ```
 
 ## Endpoints
