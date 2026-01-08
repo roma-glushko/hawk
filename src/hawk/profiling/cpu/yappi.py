@@ -100,6 +100,9 @@ class YappiProfiler:
             raise ProfilingAlreadyStarted("Profiler is already started")
 
         with self._profiler_lock:
+            if self._is_profiling:
+                raise ProfilingAlreadyStarted("Profiler is already started")
+
             yappi.set_clock_type(opt.clock_type.value)
             yappi.start(builtins=opt.builtins, profile_threads=opt.multithreaded)
             self._is_profiling = True
