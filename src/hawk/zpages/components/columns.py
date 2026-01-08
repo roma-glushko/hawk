@@ -29,9 +29,9 @@ class ZColumns(ZComponent):
             raise ValueError("Columns must be less than or equal to 5")
 
         self.id = id
-        self.columns: list[ZComponent] = [ZContainer() for _ in range(columns)]
+        self.columns: list[ZContainer] = [ZContainer() for _ in range(columns)]
 
-    def __enter__(self) -> list[ZComponent]:
+    def __enter__(self) -> list[ZContainer]:
         return self.columns
 
     def __exit__(
