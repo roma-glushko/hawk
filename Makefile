@@ -44,7 +44,7 @@ publish: ## Publish the project
 	@uv publish
 
 test: ## Run tests
-	@uv run coverage run -m pytest $(TESTS) $(SOURCE)
+	@uv run coverage run -m pytest $(TESTS) $(SOURCE) --cov --cov-report=html --cov-report=term --cov-report xml:.coverage.xml
 
 test-cov-html: ## Generate test coverage
 	@uv run coverage report --show-missing

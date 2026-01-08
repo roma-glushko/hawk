@@ -25,7 +25,7 @@ class ThemeColor(str, Enum):
     VIOLET = "violet"
     INDIGO = "indigo"
     BLUE = "blue"
-    AZURE = ""
+    AZURE = "azure"
     CYAN = "cyan"
     JADE = "jade"
     GREEN = "green"
@@ -34,7 +34,10 @@ class ThemeColor(str, Enum):
     AMBER = "amber"
     PUMPKIN = "pumpkin"
     ORANGE = "orange"
-    # TODO: add the rest
+    SAND = "sand"
+    GREY = "grey"
+    ZINC = "zinc"
+    SLATE = "slate"
 
 THEME_COLOR: ThemeColor = ThemeColor.AMBER
 

@@ -13,11 +13,11 @@
 # limitations under the License.
 from __future__ import annotations
 
+from types import TracebackType
 from typing import Any
 
 from hawk.zpages.components.base import ZComponent
 from hawk.zpages.components.container import ZContainer
-from hawk.zpages.templates import merge_json
 
 
 class ZColumns(ZComponent):
@@ -34,12 +34,23 @@ class ZColumns(ZComponent):
     def __enter__(self) -> list[ZComponent]:
         return self.columns
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         pass
 
     def to_html(self) -> str:
         return "".join([column.to_html() for column in self.columns])
 
     def to_json(self) -> dict[str, Any]:
-        # TODO: finalize the JSON structure
-        return merge_json([column.to_json() for column in self.columns])
+        columns_json = {
+            f"column_{i}": column.to_json() for i, column in enumerate(self.columns)
+        }
+
+        if self.id:
+            return {self.id: columns_json}
+
+        return columns_json

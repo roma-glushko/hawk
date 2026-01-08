@@ -13,6 +13,7 @@
 # limitations under the License.
 from __future__ import annotations
 
+from types import TracebackType
 from typing import Any
 
 from hawk.zpages.components.base import ZComponent
@@ -41,8 +42,12 @@ class ZContainer(ZComponent):
     def __enter__(self) -> "ZContainer":
         return self
 
-    # TODO: add typing
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         pass
 
     def to_html(self) -> str:

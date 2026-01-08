@@ -8,6 +8,8 @@ on:
   pull_request:
     branches: ["main"]
 
+  workflow_dispatch:
+
 jobs:
   tests:
     name: "Python ${{ matrix.python-version }}"
@@ -40,5 +42,8 @@ jobs:
       - name: "Run tests"
         run: "make test"
 
-#      - name: Upload Coverage to Codecov
-#        uses: codecov/codecov-action@v2
+      - name: Get Cover
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: web/.coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
