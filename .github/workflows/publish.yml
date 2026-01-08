@@ -16,14 +16,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: "actions/setup-python@v4"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.9"
+          enable-cache: true
 
-      - uses: pdm-project/setup-pdm@v4
+      - name: Set up Python
+        run: uv python install 3.9
 
       - name: Install dependencies
-        run: pdm install
+        run: uv sync
 
       - name: Publish Package
         run: make build
