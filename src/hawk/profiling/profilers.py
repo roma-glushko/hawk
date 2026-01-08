@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Roman Hlushko and various contributors
+# Copyright (c) 2026 Roman Hlushko and various contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,11 +20,13 @@ from typing import Protocol, Generator, Type, Mapping
 from hawk.profiling.renderers import RenderedProfile
 from hawk.profiling.mem import tracemalloc
 from hawk.profiling.cpu import pyinstrument
+from hawk.profiling.cpu import yappi
 
 
 class ProfilerType(str, Enum):
     TRACEMALLOC = "tracemalloc"
     PYINSTRUMENT = "pyinstrument"
+    YAPPI = "yappi"
 
 
 class ProfileHandler(Protocol):
@@ -42,6 +44,7 @@ class ProfileHandler(Protocol):
 PROFILERS: dict[ProfilerType, Type[ProfileHandler]] = {
     ProfilerType.TRACEMALLOC: tracemalloc.ProfileHandler,
     ProfilerType.PYINSTRUMENT: pyinstrument.ProfileHandler,
+    ProfilerType.YAPPI: yappi.ProfileHandler,
 }
 
 
