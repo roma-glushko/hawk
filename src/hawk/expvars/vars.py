@@ -14,7 +14,7 @@
 from __future__ import annotations
 
 from threading import Lock
-from typing import Any
+from typing import Any, Callable
 
 _LOCK = Lock()
 EXP_VARS: dict[str, Any] = {}
@@ -51,11 +51,11 @@ class Str(str):
         self.value = value
         expose_var(name, self)
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         return self.value == other
 
     def __str__(self) -> str:
-        return self.value
+        return self.value if self.value is not None else ""
 
 class Int(int):
     """
@@ -66,7 +66,7 @@ class Int(int):
         expose_var(name, self)
 
     def __int__(self) -> int:
-        return self.value
+        return self.value if self.value is not None else 0
 
 class Float(float):
     """
@@ -77,7 +77,7 @@ class Float(float):
         expose_var(name, self)
 
     def __float__(self) -> float:
-        return self.value
+        return self.value if self.value is not None else 0.0
 
 
 class Bool:
@@ -88,20 +88,20 @@ class Bool:
         self.value = value
         expose_var(name, self)
 
-    def __eq__(self, other: bool) -> bool:
+    def __eq__(self, other: object) -> bool:
         return self.value == other
 
     def __str__(self) -> str:
         return str(self.value)
 
     def __bool__(self) -> bool:
-        return self.value
+        return self.value if self.value is not None else False
 
 class Func:
     """
     A function that is exposed as an expvar.
     """
-    def __init__(self, name: str, func: callable) -> None:
+    def __init__(self, name: str, func: Callable[..., Any]) -> None:
         self.func = func
         expose_var(name, self)
 

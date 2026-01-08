@@ -13,7 +13,6 @@
 # limitations under the License.
 from __future__ import annotations
 
-import io
 import os
 import tempfile
 from contextlib import contextmanager
@@ -27,8 +26,8 @@ from hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStart
 from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
 
 try:
-    import yappi
-    from yappi import YFuncStats, YThreadStats
+    import yappi  # type: ignore[import-untyped]
+    from yappi import YFuncStats, YThreadStats  # type: ignore[import-untyped]
 except ModuleNotFoundError:
     yappi = None  # type: ignore[assignment]
     YFuncStats = None  # type: ignore[assignment, misc]

@@ -93,7 +93,7 @@ class PyInstrumentProfiler:
             profiler = pyinstrument.Profiler(
                 interval=opt.interval,
                 use_timing_thread=opt.use_timing_thread,
-                async_mode=opt.async_mode,
+                async_mode=opt.async_mode.value,
             )
             profiler.start()
             self._curr_profiler = profiler

@@ -222,6 +222,7 @@ class TestRenderers:
 
         rendered = renderer.render(profile_result)
 
+        assert isinstance(rendered.content, dict)
         func_stats = rendered.content["func_stats"]
         assert len(func_stats) > 0
 
