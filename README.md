@@ -7,7 +7,7 @@
 ## Features
 
 - **Memory Profiling** - tracemalloc-based allocation tracking
-- **CPU Profiling** - pyinstrument sampling profiler (async-aware)
+- **CPU Profiling** - pyinstrument (async-aware) and yappi (multi-threaded, CPU/wall time)
 - **Debug Vars** - expose internal service state
 - **ZPages** - custom debug dashboard
 - **On-demand activation** - profile only when needed, download profiles for further investigation or render them in the browser
@@ -18,6 +18,13 @@
 
 ```bash
 pip install hawk-debug
+```
+
+Optional dependencies for CPU profiling:
+
+```bash
+pip install hawk-debug[pyinstrument]  # async-aware sampling profiler
+pip install hawk-debug[yappi]          # multi-threaded CPU/wall time profiler
 ```
 
 > [!NOTE]
@@ -60,9 +67,12 @@ app.register_blueprint(hawk_debug_blueprint)
 
 | Endpoint | Description |
 |----------|-------------|
-| `/debug/prof/cpu/pyinstrument/` | CPU profile (fixed duration) |
-| `/debug/prof/cpu/pyinstrument/start/` | Start CPU profiling |
-| `/debug/prof/cpu/pyinstrument/stop/` | Stop and get CPU profile |
+| `/debug/prof/cpu/pyinstrument/` | CPU profile with pyinstrument (fixed duration) |
+| `/debug/prof/cpu/pyinstrument/start/` | Start pyinstrument CPU profiling |
+| `/debug/prof/cpu/pyinstrument/stop/` | Stop and get pyinstrument CPU profile |
+| `/debug/prof/cpu/yappi/` | CPU profile with yappi (fixed duration) |
+| `/debug/prof/cpu/yappi/start/` | Start yappi CPU profiling |
+| `/debug/prof/cpu/yappi/stop/` | Stop and get yappi CPU profile |
 | `/debug/prof/mem/tracemalloc/` | Memory profile (fixed duration) |
 | `/debug/prof/mem/tracemalloc/start/` | Start memory profiling |
 | `/debug/prof/mem/tracemalloc/snapshot/` | Take memory snapshot |
@@ -72,11 +82,18 @@ app.register_blueprint(hawk_debug_blueprint)
 
 ## Query Parameters
 
-### CPU Profiling
+### CPU Profiling (pyinstrument)
 - `duration` - profile duration in seconds (default: 5)
 - `format` - output: `html`, `json`, `speedscope`
 - `interval` - sampling interval (default: 0.001)
 - `async_mode` - `enabled`, `disabled`, `strict`
+
+### CPU Profiling (yappi)
+- `duration` - profile duration in seconds (default: 5)
+- `format` - output: `funcstats` (JSON), `pstat` (binary), `callgrind` (for KCachegrind)
+- `clock_type` - `cpu` (CPU time) or `wall` (wall clock time)
+- `builtins` - profile built-in functions (default: false)
+- `multithreaded` - profile all threads (default: true)
 
 ### Memory Profiling
 - `duration` - profile duration in seconds (default: 5)
