@@ -91,7 +91,8 @@ class Bool:
     def __eq__(self, other: bool) -> bool:
         return self.value == other
 
-    def __
+    def __str__(self) -> str:
+        return str(self.value)
 
     def __bool__(self) -> bool:
         return self.value

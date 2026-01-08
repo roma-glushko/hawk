@@ -17,6 +17,7 @@ import asyncio
 from enum import Enum
 
 from hawk import zpages
+from hawk.expvars.zpage import register_expvars_zpage
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
 from hawk.contrib.starlette.response import format_response
@@ -36,12 +37,27 @@ def get_router(
     prefix: str = "/debug",
     tags: list[str | Enum] | None = None,
     include_in_schema: bool = False,
+    register_expvars: bool = True,
 ) -> APIRouter:
     """
-    Create a new FastAPI router with all debugging endpoints
+    Create a new FastAPI router with all debugging endpoints.
+
+    Parameters
+    ----------
+    prefix : str
+        URL prefix for all debug endpoints (default: "/debug").
+    tags : list[str | Enum] | None
+        OpenAPI tags for the endpoints (default: ["debug"]).
+    include_in_schema : bool
+        Whether to include endpoints in OpenAPI schema (default: False).
+    register_expvars : bool
+        Whether to register the expvars ZPage at /debug/vars/ (default: True).
     """
     if tags is None:
         tags = ["debug"]
+
+    if register_expvars:
+        register_expvars_zpage()
 
     router = APIRouter(
         prefix=prefix,

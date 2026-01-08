@@ -11,3 +11,28 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+from hawk.expvars.vars import (
+    expose_var,
+    get_vars,
+    Str,
+    Int,
+    Float,
+    Bool,
+    Func,
+)
+from hawk.expvars.zpage import (
+    create_expvars_zpage,
+    register_expvars_zpage,
+)
+
+__all__ = (
+    "expose_var",
+    "get_vars",
+    "Str",
+    "Int",
+    "Float",
+    "Bool",
+    "Func",
+    "create_expvars_zpage",
+    "register_expvars_zpage",
+)
