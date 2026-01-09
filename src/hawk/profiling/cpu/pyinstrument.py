@@ -22,6 +22,7 @@ from typing import Generator, Protocol, Mapping
 
 from hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
 from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.trace_context import TraceContext, profiling_span
 
 try:
     import pyinstrument
@@ -115,7 +116,7 @@ class PyInstrumentProfiler:
 
 
 class Renderer(Protocol):
-    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
         ...
 
 
@@ -130,19 +131,30 @@ class JSONRenderer:
 
         self._renderer = pyinstrument.renderers.JSONRenderer()
 
-    def get_filename(self) -> str:
+    def get_filename(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_pyinstr_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
+        import json
+
         content = profiler.output(renderer=self._renderer)
+        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
+
+        # Inject trace context into JSON content
+        if trace_ctx.is_valid:
+            content_dict = json.loads(content)
+            content_dict["trace_context"] = trace_ctx.to_dict()
+            content = json.dumps(content_dict)
 
         return RenderedProfile(
-            file_name=self.get_filename(),
+            file_name=self.get_filename(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
+            metadata=metadata,
         )
 
 
@@ -157,19 +169,22 @@ class HTMLRenderer:
 
         self._renderer = pyinstrument.renderers.HTMLRenderer()
 
-    def get_filename(self) -> str:
+    def get_filename(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_pyinstr_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
         content = profiler.output(renderer=self._renderer)
+        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
 
         return RenderedProfile(
-            file_name=self.get_filename(),
+            file_name=self.get_filename(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
+            metadata=metadata,
         )
 
 
@@ -184,19 +199,30 @@ class SpeedscopeRenderer:
 
         self._renderer = pyinstrument.renderers.SpeedscopeRenderer()
 
-    def get_filename(self) -> str:
+    def get_filename(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_cpu_pyinstr_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_pyinstr_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, profiler: "pyinstrument.Profiler") -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
+        import json
+
         content = profiler.output(renderer=self._renderer)
+        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
+
+        # Inject trace context into Speedscope JSON content
+        if trace_ctx.is_valid:
+            content_dict = json.loads(content)
+            content_dict["trace_context"] = trace_ctx.to_dict()
+            content = json.dumps(content_dict)
 
         return RenderedProfile(
-            file_name=self.get_filename(),
+            file_name=self.get_filename(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
+            metadata=metadata,
         )
 
 
@@ -226,17 +252,29 @@ class ProfileHandler:
         self._format = ProfileFormat(query_params.get("format", ProfileFormat.HTML))
 
         self._profiler: "pyinstrument.Profiler" | None = None
+        self._trace_ctx: TraceContext | None = None
 
     @contextmanager
     def profile(self) -> Generator[None, None, None]:
-        with profiler.profile(self._opt) as p:
-            self._profiler = p
-            yield
+        span_attributes = {
+            "hawk.format": self._format.value,
+            "hawk.interval": self._opt.interval,
+            "hawk.async_mode": self._opt.async_mode.value,
+        }
+
+        with profiling_span("cpu", "pyinstrument", span_attributes):
+            # Capture trace context at the start of profiling (inside the span)
+            self._trace_ctx = TraceContext.from_current_span()
+
+            with profiler.profile(self._opt) as p:
+                self._profiler = p
+                yield
 
     def render_profile(self) -> RenderedProfile:
         if not self._profiler:
             raise ProfilingNotStarted("Profiler is not started yet")
 
         renderer = get_renderer(self._format)
+        trace_ctx = self._trace_ctx or TraceContext()
 
-        return renderer.render(self._profiler)
+        return renderer.render(self._profiler, trace_ctx)

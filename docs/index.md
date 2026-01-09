@@ -61,6 +61,7 @@ Don't have that in place? That's alright, keep exporting Hawk, it should be help
 - 🔧 Create [custom debug pages](/zpages/) in your services (a.k.a. ZPages) that both humans and scripts can work with
 - 🔧 Controlled via environment variables, no code modifications needed to enable/disable functionality completely
 - 🔓 No elevated permissions needed (`CAP_PTRACE`, etc.)
+- 📡 [OpenTelemetry integration](/integrations/opentelemetry/) - link profiles to distributed traces
 
 ## License
 

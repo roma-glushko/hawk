@@ -24,6 +24,7 @@ from typing import Generator, Protocol, Mapping, Any
 
 from hawk.profiling.exceptions import ProfilingNotStarted, ProfilingAlreadyStarted
 from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.trace_context import TraceContext, profiling_span
 
 try:
     import yappi  # type: ignore[import-untyped]
@@ -126,7 +127,7 @@ class YappiProfiler:
 
 
 class Renderer(Protocol):
-    def render(self, result: ProfileResult) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
         ...
 
 
@@ -139,12 +140,13 @@ class PStatRenderer:
         if yappi is None:
             raise ImportError("yappi is not installed")
 
-    def get_filename(self) -> str:
+    def get_filename(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_cpu_yappi_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_yappi_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, result: ProfileResult) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
         # Yappi's pstat save requires a file path, not a file object
         fd, temp_path = tempfile.mkstemp(suffix=".pstat")
         try:
@@ -155,11 +157,14 @@ class PStatRenderer:
         finally:
             os.unlink(temp_path)
 
+        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
+
         return RenderedProfile(
-            file_name=self.get_filename(),
+            file_name=self.get_filename(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
+            metadata=metadata,
         )
 
 
@@ -172,12 +177,13 @@ class CallgrindRenderer:
         if yappi is None:
             raise ImportError("yappi is not installed")
 
-    def get_filename(self) -> str:
+    def get_filename(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_cpu_yappi_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_yappi_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, result: ProfileResult) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
         # Yappi's callgrind save requires a file path, not a file object
         fd, temp_path = tempfile.mkstemp(suffix=".callgrind")
         try:
@@ -188,11 +194,14 @@ class CallgrindRenderer:
         finally:
             os.unlink(temp_path)
 
+        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
+
         return RenderedProfile(
-            file_name=self.get_filename(),
+            file_name=self.get_filename(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
+            metadata=metadata,
         )
 
 
@@ -205,12 +214,13 @@ class FuncStatsRenderer:
         if yappi is None:
             raise ImportError("yappi is not installed")
 
-    def get_filename(self) -> str:
+    def get_filename(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_cpu_yappi_profile_{timestamp}.{self.file_ext}"
+        return f"hwk_cpu_yappi_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, result: ProfileResult) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
         func_stats_list: list[dict[str, Any]] = []
 
         for stat in result.func_stats:
@@ -237,16 +247,22 @@ class FuncStatsRenderer:
                 "sched_count": stat.sched_count,
             })
 
-        content = {
+        content: dict[str, Any] = {
             "func_stats": func_stats_list,
             "thread_stats": thread_stats_list,
         }
 
+        metadata = None
+        if trace_ctx.is_valid:
+            content["trace_context"] = trace_ctx.to_dict()
+            metadata = trace_ctx.to_dict()
+
         return RenderedProfile(
-            file_name=self.get_filename(),
+            file_name=self.get_filename(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
+            metadata=metadata,
         )
 
 
@@ -284,17 +300,30 @@ class ProfileHandler:
         self._format = ProfileFormat(query_params.get("format", ProfileFormat.FUNC_STATS.value))
 
         self._result: ProfileResult | None = None
+        self._trace_ctx: TraceContext | None = None
 
     @contextmanager
     def profile(self) -> Generator[None, None, None]:
-        with profiler.profile(self._opt) as result:
-            self._result = result
-            yield
+        span_attributes = {
+            "hawk.format": self._format.value,
+            "hawk.clock_type": self._opt.clock_type.value,
+            "hawk.builtins": self._opt.builtins,
+            "hawk.multithreaded": self._opt.multithreaded,
+        }
+
+        with profiling_span("cpu", "yappi", span_attributes):
+            # Capture trace context at the start of profiling (inside the span)
+            self._trace_ctx = TraceContext.from_current_span()
+
+            with profiler.profile(self._opt) as result:
+                self._result = result
+                yield
 
     def render_profile(self) -> RenderedProfile:
         if not self._result or not self._result.func_stats:
             raise ProfilingNotStarted("Profiler is not started yet")
 
         renderer = get_renderer(self._format)
+        trace_ctx = self._trace_ctx or TraceContext()
 
-        return renderer.render(self._result)
+        return renderer.render(self._result, trace_ctx)

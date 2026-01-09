@@ -1,12 +1,20 @@
 # Integrations
 
-Hawk integrates with popular Python web frameworks.
+Hawk integrates with popular Python web frameworks and observability tools.
+
+## Frameworks
 
 | Framework | Status | Features |
 |-----------|--------|----------|
 | [FastAPI](fastapi.md) | Full | Memory, CPU (PyInstrument, Yappi), ZPages, Expvars |
 | [Starlette](starlette.md) | Partial | Memory profiling |
 | [Flask](flask.md) | Partial | Memory profiling |
+
+## Observability
+
+| Tool | Status | Features |
+|------|--------|----------|
+| [OpenTelemetry](opentelemetry.md) | Optional | Trace linking, profiling spans |
 
 ## Quick Start
 
@@ -51,3 +59,4 @@ app.register_blueprint(create_debug_blueprint(), url_prefix="/debug")
 | CPU (Yappi) | Yes | - | - |
 | Debug variables | Yes | - | - |
 | Custom ZPages | Yes | - | - |
+| OpenTelemetry | Yes | Yes | Yes |
