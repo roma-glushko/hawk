@@ -1,4 +1,4 @@
-# Copyright (c) 2024 Roman Hlushko and various contributors
+# Copyright (c) 2026 Roman Hlushko and various contributors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ from hawk import zpages
 from hawk.expvars.zpage import register_expvars_zpage
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
+import hawk.profiling.cpu.yappi as yp
 from hawk.contrib.starlette.response import format_response
 from hawk.zpages import ZPageFormat
 
@@ -163,6 +164,57 @@ def get_router(
 
             renderer = pyinstr.get_renderer(format)
             profile = renderer.render(profiler)
+
+            return format_response(profile)
+
+    if yp.yappi is not None:
+        @router.get("/prof/cpu/yappi/")
+        async def profile_cpu_yappi(
+            duration: int = 5,
+            clock_type: yp.ClockType = yp.ClockType.CPU,
+            builtins: bool = False,
+            multithreaded: bool = True,
+            format: yp.ProfileFormat = yp.ProfileFormat.FUNC_STATS,
+        ) -> Response:
+            opt = yp.ProfileOptions(
+                clock_type=clock_type,
+                builtins=builtins,
+                multithreaded=multithreaded,
+            )
+
+            with yp.profiler.profile(opt) as result:
+                await asyncio.sleep(duration)
+
+            renderer = yp.get_renderer(format)
+
+            profile = renderer.render(result)
+
+            return format_response(profile)
+
+        @router.get("/prof/cpu/yappi/start/")
+        async def start_manual_cpu_yappi_profile(
+            clock_type: yp.ClockType = yp.ClockType.CPU,
+            builtins: bool = False,
+            multithreaded: bool = True,
+        ) -> Response:
+            opt = yp.ProfileOptions(
+                clock_type=clock_type,
+                builtins=builtins,
+                multithreaded=multithreaded,
+            )
+
+            yp.profiler.start(opt)
+
+            return Response(content="Yappi CPU profiling started")
+
+        @router.get("/prof/cpu/yappi/stop/")
+        async def stop_manual_cpu_yappi_profile(
+            format: yp.ProfileFormat = yp.ProfileFormat.FUNC_STATS,
+        ) -> Response:
+            result = yp.profiler.stop()
+
+            renderer = yp.get_renderer(format)
+            profile = renderer.render(result)
 
             return format_response(profile)
 

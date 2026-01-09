@@ -6,6 +6,7 @@ dist
 .pdm-python
 
 .coverage
+.coverage.xml
 
 site
 src/hawk/version.py

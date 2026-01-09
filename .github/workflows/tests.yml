@@ -8,6 +8,11 @@ on:
   pull_request:
     branches: ["main"]
 
+  workflow_dispatch:
+
+permissions:
+  pull-requests: write
+
 jobs:
   tests:
     name: "Python ${{ matrix.python-version }}"
@@ -15,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: "actions/checkout@v3"
@@ -31,14 +36,17 @@ jobs:
       - name: Install dependencies
         run: make install
 
-#      - name: "Linting"
-#        run: "make lint-check"
+      - name: "Linting"
+        run: "make lint-check"
 
       - name: "Build package & docs"
         run: "make build"
 
-#      - name: "Run tests"
-#        run: "make test"
+      - name: "Run tests"
+        run: "make test"
 
-#      - name: Upload Coverage to Codecov
-#        uses: codecov/codecov-action@v2
+      - name: Get Cover
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: .coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}

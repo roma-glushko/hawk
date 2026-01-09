@@ -532,6 +532,9 @@ docs = [
 pyinstrument = [
     { name = "pyinstrument" },
 ]
+yappi = [
+    { name = "yappi" },
+]
 zpages = [
     { name = "jinja2" },
 ]
@@ -560,8 +563,9 @@ requires-dist = [
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.5.34" },
     { name = "mkdocs-pymdownx-material-extras", marker = "extra == 'docs'", specifier = ">=2.5.6" },
     { name = "pyinstrument", marker = "extra == 'pyinstrument'", specifier = ">=4.7.2" },
+    { name = "yappi", marker = "extra == 'yappi'", specifier = ">=1.6.0" },
 ]
-provides-extras = ["docs", "pyinstrument", "zpages"]
+provides-extras = ["docs", "pyinstrument", "yappi", "zpages"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -589,7 +593,7 @@ name = "importlib-metadata"
 version = "8.7.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "zipp" },
+    { name = "zipp", marker = "python_full_version < '3.10'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/f3/49/3b30cad09e7771a4982d9975a8cbf64f00d4a1ececb53297f1d9a7be1b10/importlib_metadata-8.7.1.tar.gz", hash = "sha256:49fef1ae6440c182052f407c8d34a68f72efc36db9ca90dc0113398f2fdde8bb", size = 57107, upload-time = "2025-12-21T10:00:19.278Z" }
 wheels = [
@@ -1694,6 +1698,68 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/5a/70/1469ef1d3542ae7c2c7b72bd5e3a4e6ee69d7978fa8a3af05a38eca5becf/werkzeug-3.1.5.tar.gz", hash = "sha256:6a548b0e88955dd07ccb25539d7d0cc97417ee9e179677d22c7041c8f078ce67", size = 864754, upload-time = "2026-01-08T17:49:23.247Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ad/e4/8d97cca767bcc1be76d16fb76951608305561c6e056811587f36cb1316a8/werkzeug-3.1.5-py3-none-any.whl", hash = "sha256:5111e36e91086ece91f93268bb39b4a35c1e6f1feac762c9c822ded0a4e322dc", size = 225025, upload-time = "2026-01-08T17:49:21.859Z" },
+]
+
+[[package]]
+name = "yappi"
+version = "1.7.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/00/76/264b149c6a11bb9094336c87d904953d4ba05eb0a4172e7e2d6523285a48/yappi-1.7.3.tar.gz", hash = "sha256:bef71ad0595b600261668dcb1e18b935a7117a724c04d7be60d9d246e32d0928", size = 59594, upload-time = "2025-10-24T11:17:20.156Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/81/e1/6e0927452b4cbc0933a3f7711726f4b3f927c71c24965d139b5cf23dcf73/yappi-1.7.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:980177174897779a3129e76b0fbc39c6d920c0303330f0e42c4ba0181f23a3ea", size = 32655, upload-time = "2025-10-24T11:16:16.636Z" },
+    { url = "https://files.pythonhosted.org/packages/55/a8/9a7df5ae3fcfef73b1c693f55b56f85e8b49bed5654a27506678968f3388/yappi-1.7.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:ea2de116d64336822b628f6f66e9b8d9a18a082444fe11364e65b176ec503b7e", size = 32703, upload-time = "2025-10-24T11:16:17.675Z" },
+    { url = "https://files.pythonhosted.org/packages/50/90/d2e083ef36d1ed9ee9dcfb32a5d5703532eecc46c557c0302100dd306ab0/yappi-1.7.3-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4122bcae6575d16863219493e88f9734511895359a9a5c062dc582b7a50cb7ce", size = 79322, upload-time = "2025-10-24T11:16:18.941Z" },
+    { url = "https://files.pythonhosted.org/packages/f1/d5/a2ba5913740c04cd51fff9de9f79c5b4433c664c041ab8c0f07b31bbfa2c/yappi-1.7.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:490ee266296bce4972c3e1db0cec3e1545df26952153f9f10588431b4c79840c", size = 78579, upload-time = "2025-10-24T11:16:20.124Z" },
+    { url = "https://files.pythonhosted.org/packages/94/7b/91298b99946c1750d067dcf45c630d16676d2a596699de309b39bb5806b6/yappi-1.7.3-cp310-cp310-musllinux_1_2_aarch64.whl", hash = "sha256:9b131e6679f809a5d5724c1fd3ca5efe3c1977ecdd77248750724d1460d5efbb", size = 76885, upload-time = "2025-10-24T11:16:20.984Z" },
+    { url = "https://files.pythonhosted.org/packages/5c/86/7bc9a4835d14b1e2d778d083eb5a92d1406e90c6e99530d6f8d3adf208ad/yappi-1.7.3-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:73b83ac30690cfd80cbb94832a01a929995f511f4e865b433d5de26c9d04dab3", size = 76659, upload-time = "2025-10-24T11:16:21.861Z" },
+    { url = "https://files.pythonhosted.org/packages/00/95/03b1492159a0916b5821a311a658dd2f19e84f947e2ea0fb37472f27a9b9/yappi-1.7.3-cp310-cp310-win32.whl", hash = "sha256:21c321679917fcf710a31f36a64611d0b3f1e92d4606582f320d300d4cf35fae", size = 32395, upload-time = "2025-10-24T11:16:23.064Z" },
+    { url = "https://files.pythonhosted.org/packages/75/6a/3ae1fe29db5ea93ba8319b6cc8d2495eaab00eef4b9b04c4e51a9f06e297/yappi-1.7.3-cp310-cp310-win_amd64.whl", hash = "sha256:6a048ea8f213e04f267dfde85c7a6430867f67b9e062ec11d411061630211f19", size = 34738, upload-time = "2025-10-24T11:16:23.939Z" },
+    { url = "https://files.pythonhosted.org/packages/51/55/bd7b4217382a4973c65a291b78832a0387997ce00f0fb4304b295bfda334/yappi-1.7.3-cp310-cp310-win_arm64.whl", hash = "sha256:ea3d936a3bfbd8482c7bb040a399376dbae50b5185d83e4074fdeb1775c149c3", size = 32493, upload-time = "2025-10-24T11:16:24.973Z" },
+    { url = "https://files.pythonhosted.org/packages/76/a4/93f3fa5eb15736a50032621cd7d8a84fb841c00649ede74d3165406c6b1a/yappi-1.7.3-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:4e34aff669d5f08811234d1ac3b1ecc494353b9a3659d046278fa9a91ff28815", size = 32749, upload-time = "2025-10-24T11:16:25.918Z" },
+    { url = "https://files.pythonhosted.org/packages/c4/25/4fba664b43d1706ebe4da6d815dbe171222e55c9634f26473ff4946fb591/yappi-1.7.3-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:4518fc47efeaef9fc5035482711156b69cc52fe7d79da0463f1b044d0f40249f", size = 32837, upload-time = "2025-10-24T11:16:27.042Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/bb/6ec7288ef869349eb92b0f1105d00f5243449fba45785642ae961e7c0cbe/yappi-1.7.3-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:c8152f6a26ba04cbbf12e959784b5d2497f8f1a8462d30442ca4cef581f78a4c", size = 80673, upload-time = "2025-10-24T11:16:28.34Z" },
+    { url = "https://files.pythonhosted.org/packages/bb/f8/7a370130431eb5e73805877bd211f110d44d66c8278a0a0b570dccf0541c/yappi-1.7.3-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:627c7c2e6752a8231712760819204f2fc13ab4ba24844fbfcb435fd2f0120c6a", size = 79845, upload-time = "2025-10-24T11:16:29.599Z" },
+    { url = "https://files.pythonhosted.org/packages/47/2f/4b167a2a435f2d030900166e532d7a9ef9bd1e11341992dfcc0ac2f91308/yappi-1.7.3-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:01328c4e5a48a0fe8d840a928cf9105a20060272cf635fc49cf9b7762f70e696", size = 78282, upload-time = "2025-10-24T11:16:30.476Z" },
+    { url = "https://files.pythonhosted.org/packages/40/a4/e4780d107474db8f5b3d9dd2497d58fc5bafada1eae4061f0ab75c19bfcf/yappi-1.7.3-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:c319427c220c35bc9a2719356d6de09acb855078bc93f4dc9da03c7ccda64915", size = 77972, upload-time = "2025-10-24T11:16:31.78Z" },
+    { url = "https://files.pythonhosted.org/packages/3c/90/2fad4f3997dcfae45afc087ca32a5ebd659a2fd42530874e762ea18f6bb2/yappi-1.7.3-cp311-cp311-win32.whl", hash = "sha256:f2ee5a22d1cc2f665ecb0eb26f554a4dc0b9af09bed7d04b1de0f2a9e08ae45c", size = 32479, upload-time = "2025-10-24T11:16:33.049Z" },
+    { url = "https://files.pythonhosted.org/packages/28/52/03b6a75cbde41473bf2072b612b643a2c3cc868ac4695ca063d44a7acbfe/yappi-1.7.3-cp311-cp311-win_amd64.whl", hash = "sha256:77dac9da5772e8fe6e0dcd116e2785682df6601e77d824436f3b41de8d4ce489", size = 34852, upload-time = "2025-10-24T11:16:33.932Z" },
+    { url = "https://files.pythonhosted.org/packages/60/e5/57bb22892cdd7a807509978701319e1ba4af33bb687babee778263c0bb01/yappi-1.7.3-cp311-cp311-win_arm64.whl", hash = "sha256:4ece7c47fb16b78b7ad8d7b143f74d2923ab2c76a8993b3dd32ef6df3e40dbef", size = 32512, upload-time = "2025-10-24T11:16:35.08Z" },
+    { url = "https://files.pythonhosted.org/packages/59/ea/a4bdae99d0463dff28c53b07f9a98333064e28335a0513ad26c9f8b7464a/yappi-1.7.3-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:835ba8b6078aa480c185c43e70489d6f7730d3c3570a51451d1f9e29f0fdecf5", size = 32965, upload-time = "2025-10-24T11:16:36.217Z" },
+    { url = "https://files.pythonhosted.org/packages/de/9e/ac369cf4b42676b24684cd7bb16a439b76a46d8d1fe5abe13f88c5dabe48/yappi-1.7.3-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:a23419753961c523a4d98799e199b32e7102bc1b4bd2279199e63e9bc37c0874", size = 32901, upload-time = "2025-10-24T11:16:37.042Z" },
+    { url = "https://files.pythonhosted.org/packages/e3/59/f85c08afbc3e0c344d27a00978438a15f384bf1f0bfc1761df66e5141edd/yappi-1.7.3-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:2b26c062c072ee1831d77cf06f8a812dc0cbcac63ef2f5b4cc6b4e67718603b6", size = 81700, upload-time = "2025-10-24T11:16:37.831Z" },
+    { url = "https://files.pythonhosted.org/packages/76/ff/eb0a78fbea9aff0e5aa49932cc471381dd3bf9be500893d3fd72d17bf132/yappi-1.7.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:54d17fb356f2cfbb4862901d05cf686bddd46d5e5d3b4bbcb3a0ead3d4fac77d", size = 81291, upload-time = "2025-10-24T11:16:39.083Z" },
+    { url = "https://files.pythonhosted.org/packages/64/02/6df059b9c0d9932561e4a6e1e7495cc97a909895d0278b034eddbad1da62/yappi-1.7.3-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:6c62600783a0cf659c46324264996489fc6348dfc113faaf31b7c9af8e747133", size = 79029, upload-time = "2025-10-24T11:16:39.953Z" },
+    { url = "https://files.pythonhosted.org/packages/e8/ab/e2787c5d1261e08eec6682b76ba39d4a0ace5fa4e778f8255e82c6a7d4e0/yappi-1.7.3-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:0cb41e4243907368d24081a4acd45d9dfa0867c8cb372491bb00d774f03fb21f", size = 79163, upload-time = "2025-10-24T11:16:41.203Z" },
+    { url = "https://files.pythonhosted.org/packages/51/c0/ffb170e9e648c9d623648427e738a8d42ad708c7f2ad4413d84533bdfa7e/yappi-1.7.3-cp312-cp312-win32.whl", hash = "sha256:b93bbf4e6951c1ace9687ac6b027c4b14a581359f233b2dfb21108fe08650397", size = 32608, upload-time = "2025-10-24T11:16:42.11Z" },
+    { url = "https://files.pythonhosted.org/packages/04/2c/5cf8208f904644568c1fb74ddd6ed3ed2eccfccb239f0d72386d1cb69c6f/yappi-1.7.3-cp312-cp312-win_amd64.whl", hash = "sha256:396c183dd0ab93532f2fe5c1742b96e136846d56c249b85e72b653af56d11352", size = 34962, upload-time = "2025-10-24T11:16:43.565Z" },
+    { url = "https://files.pythonhosted.org/packages/bd/de/f4d21b20c1e6d825977888e1dcf77070709ece92c3e479deb10b55c61e31/yappi-1.7.3-cp312-cp312-win_arm64.whl", hash = "sha256:0317c9bf8908437578cb7661d2d5786043d2817b0377bb1e493669a1f1dbad76", size = 32591, upload-time = "2025-10-24T11:16:44.442Z" },
+    { url = "https://files.pythonhosted.org/packages/cb/31/5a474c37184b5202afd52fcc669f05af830a856b54191b5889fce9f67c1c/yappi-1.7.3-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:3150e3a19f42baa5438b1b171d8b6f71a6c1da04bc6a4a494508b9acdda4f280", size = 32991, upload-time = "2025-10-24T11:16:45.371Z" },
+    { url = "https://files.pythonhosted.org/packages/f7/67/34cb8bc23d57574e552ad14c5b414d05b97ff9fe82083b88d42d8519c4e8/yappi-1.7.3-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:30aaabee21b03920de502e6b975feb6d801e04ccbfd5a726b9cb6f86d5162ea9", size = 32890, upload-time = "2025-10-24T11:16:46.232Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/0a/01f50739e0a386988f53772cf7cdc7ff118e33c50c23a2e8171dba7d4d2d/yappi-1.7.3-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e900c3d923e669ffbd6a1f25b1d066a74f2eb813e628e49b867b191cff406b9d", size = 81978, upload-time = "2025-10-24T11:16:47.069Z" },
+    { url = "https://files.pythonhosted.org/packages/e2/88/a16244166d5dfac2eddf6fc41d02a827e1ed9840abce98caa228edb7a29d/yappi-1.7.3-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:585977229d6f5caa0c7680885b75de0ced391c69cc97fbea09982618ddb76750", size = 81585, upload-time = "2025-10-24T11:16:48.015Z" },
+    { url = "https://files.pythonhosted.org/packages/dc/8e/3da20e2d0745a2ad15ee64ae4174d87acc885933b942fda91eb5af4b9148/yappi-1.7.3-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:286f4126bf83c861dbf16d1f6623d07e88e38e3872e763c94ace8eade1c63cc4", size = 79321, upload-time = "2025-10-24T11:16:50.064Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/01/5a864164459e7e83d693507662b3edea362f7652158d65f140b966520ba8/yappi-1.7.3-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:629c448699e9cd00c8a66e35b2fee829cac45a481ba1135ac26a54fc8d763d18", size = 79478, upload-time = "2025-10-24T11:16:51.704Z" },
+    { url = "https://files.pythonhosted.org/packages/db/57/ff6320cc5bfca6f65bb17d82e2b11efadb433463d0dae70008a4753e4ad7/yappi-1.7.3-cp313-cp313-win32.whl", hash = "sha256:78a314b0a6dddc037e6abbde2658396c53a082f379b8bb8a4ded520796215044", size = 32596, upload-time = "2025-10-24T11:16:52.795Z" },
+    { url = "https://files.pythonhosted.org/packages/9d/03/1f2dfe19e564fd270dc4aed475405e9136be7d10e77b1c114c1dbdfa9012/yappi-1.7.3-cp313-cp313-win_amd64.whl", hash = "sha256:9170c4ca0abd57fc21e0cde1dc01a940114194671c492758725eb2d3ce63050f", size = 34960, upload-time = "2025-10-24T11:16:53.932Z" },
+    { url = "https://files.pythonhosted.org/packages/0e/c3/f88f5fe35ef23096c78822ea12c7e3321ef13a64a0487878b117f467c110/yappi-1.7.3-cp313-cp313-win_arm64.whl", hash = "sha256:e1331a3bef949c51edbe319090b9b1c6cc62315a766559ae901d1abd609216da", size = 32622, upload-time = "2025-10-24T11:16:54.794Z" },
+    { url = "https://files.pythonhosted.org/packages/a2/61/e55f9d690e02fe21e082e771804fafa44877ddb6a0b6b909d9b1797f429b/yappi-1.7.3-cp314-cp314-macosx_10_15_x86_64.whl", hash = "sha256:80740ec24a41a1345af0b48dfc3d3a76c4fcde1d4b4182f385fe7b90b6a907c7", size = 33055, upload-time = "2025-10-24T11:16:55.677Z" },
+    { url = "https://files.pythonhosted.org/packages/80/c7/f7d05e99eb36f526d509d9bbbc2edb0629e2261abda6f0406e8d7334d41e/yappi-1.7.3-cp314-cp314-macosx_11_0_arm64.whl", hash = "sha256:3071be6efb8eb2dd6104dd3afb6e95d05229494c48fcffd3e14546302438974b", size = 32916, upload-time = "2025-10-24T11:16:56.504Z" },
+    { url = "https://files.pythonhosted.org/packages/64/3a/1e03393f754af27e0f750f51600f6dad527625d66a762cba1d0525655585/yappi-1.7.3-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:5f4d2111cb748c5ba41b833a7e55dca9f2d3bc4bfaadc015e60580d3fc00b6db", size = 81995, upload-time = "2025-10-24T11:16:57.358Z" },
+    { url = "https://files.pythonhosted.org/packages/8d/96/344db24ec28e8e2d0a55dadba03481f5c4ec4f9ac3ef59535337b92a8e41/yappi-1.7.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:73752b0386af72464fc9d574dc17f51db495780aee60faa49fe138018efad12e", size = 81378, upload-time = "2025-10-24T11:16:58.596Z" },
+    { url = "https://files.pythonhosted.org/packages/4e/00/5b70fe11fdfe6e1cbdaff2e315e542767d35798304730498d5e0e56c9922/yappi-1.7.3-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:172da2c41c768edec9071028b12d34773aef7b109d0d642662170cd925d86e83", size = 79291, upload-time = "2025-10-24T11:16:59.474Z" },
+    { url = "https://files.pythonhosted.org/packages/62/79/8609f6992ef8d7b20eab3f5ed3821390092e8b7207beee53eec7e82ac089/yappi-1.7.3-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:2849c2f0f21628cfbcd5a7fa3175ae52340735624775ffb263a86ac5c6706e91", size = 79289, upload-time = "2025-10-24T11:17:00.435Z" },
+    { url = "https://files.pythonhosted.org/packages/14/84/011f2df98543ee41837b473af69839b60b8401beff9e1083c39e58441bb6/yappi-1.7.3-cp314-cp314-win32.whl", hash = "sha256:2622e3ebf0a07cbcaca70800aa6090317182c6a7389e1428c913b5c82f77d352", size = 33165, upload-time = "2025-10-24T11:17:01.393Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/58/e11f0a7b762eeb8a089e7d5627412a55a6b5227bf35aa8055081ee1fc8e6/yappi-1.7.3-cp314-cp314-win_amd64.whl", hash = "sha256:056bdebc61eb394f53c74cae208ae0ab3811147a5671921dd1fa126d682d8337", size = 35557, upload-time = "2025-10-24T11:17:02.285Z" },
+    { url = "https://files.pythonhosted.org/packages/72/8a/766065664ee74d2820f0b84fa89585ecdb61674dd1414c639c2bc063cd95/yappi-1.7.3-cp314-cp314-win_arm64.whl", hash = "sha256:a7d3227bfa4adbd65f6f9ad3b487534b040f2232ab2465af00a2122df15eacc5", size = 33183, upload-time = "2025-10-24T11:17:03.183Z" },
+    { url = "https://files.pythonhosted.org/packages/85/08/3f1f746706937ca93a015caf29fc66aa90a93ce1f7bc224815d1230902a7/yappi-1.7.3-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:8717e2ad513218e2f92b9e8ebef19dd1fa4c95840bc7bab4ce9ffc15bc56deb2", size = 32604, upload-time = "2025-10-24T11:17:11.505Z" },
+    { url = "https://files.pythonhosted.org/packages/fb/fc/6ba5d77e26542511a12b4e5df70b22f7eb2e6a2aa9af3118743fc2388491/yappi-1.7.3-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:bcc4b69aa60a00f3449d8ed1c94e298f4a89a30e3ab721a049e9bc3dccc50123", size = 32646, upload-time = "2025-10-24T11:17:12.35Z" },
+    { url = "https://files.pythonhosted.org/packages/8c/21/3c389f9df0909de06ed835fbb265101af45017509a51be7f2c8a2c1c1759/yappi-1.7.3-cp39-cp39-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:83856257bad9ebb4fceef2e7ce6bc34a0c149ab2dd79b3457514c8f8f80fc3a3", size = 78441, upload-time = "2025-10-24T11:17:13.556Z" },
+    { url = "https://files.pythonhosted.org/packages/d8/25/7ce8e1e284cb1f0e7746d58659528137cd7b4e0b3107abd5ba68ef6c2ab2/yappi-1.7.3-cp39-cp39-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b71286e39867cfe15ad83df1832a02f867eb7eaea615c6b8ad1277bb4d43c661", size = 77674, upload-time = "2025-10-24T11:17:14.495Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/a0/0654f76f38659d5a18f34a303bf4036e03b2d17afe9fcc0e06c502e937f7/yappi-1.7.3-cp39-cp39-musllinux_1_2_aarch64.whl", hash = "sha256:df809a9aa396715aac4a51244c2db78a385e82b9405c10aa0e9be164a2cfb0cb", size = 76073, upload-time = "2025-10-24T11:17:15.436Z" },
+    { url = "https://files.pythonhosted.org/packages/7c/e3/723dc51fcdd381e9eb55a59cf804d2c059704213efac0afb78a5b10af0ee/yappi-1.7.3-cp39-cp39-musllinux_1_2_x86_64.whl", hash = "sha256:4de651a539cacd137629990f99a2b9c885a62ea278d4987386d44ec0dbdc9a73", size = 75821, upload-time = "2025-10-24T11:17:16.375Z" },
+    { url = "https://files.pythonhosted.org/packages/56/ae/2733e87565cbec346749fc724fab23b32b32d4b2e2427bbafac5ef3fed5c/yappi-1.7.3-cp39-cp39-win32.whl", hash = "sha256:1720c677285bfc02ae09389f636f362e7a0687fcc35b3de322c9540757c118f1", size = 32376, upload-time = "2025-10-24T11:17:17.261Z" },
+    { url = "https://files.pythonhosted.org/packages/da/a2/1c358dd6fdf9820ba01d7599f9312383a3b07cc7aa4444f97fa7a4ece94c/yappi-1.7.3-cp39-cp39-win_amd64.whl", hash = "sha256:f5c5bc828d63316351f5d6c499e1d50f332a9522621b5dc64c71ce1167909621", size = 34760, upload-time = "2025-10-24T11:17:18.463Z" },
+    { url = "https://files.pythonhosted.org/packages/8e/61/5fff9608b6fd9a972b0fd509aeed6a169ffae7467a21e70de8b8661f7561/yappi-1.7.3-cp39-cp39-win_arm64.whl", hash = "sha256:a546b77416eceaab2668c2fde52db183b96214351a5fc518300cfdd319d4131f", size = 32435, upload-time = "2025-10-24T11:17:19.303Z" },
 ]
 
 [[package]]
