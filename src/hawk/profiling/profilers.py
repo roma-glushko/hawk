@@ -19,12 +19,14 @@ from typing import Protocol, Generator, Type, Mapping
 
 from hawk.profiling.renderers import RenderedProfile
 from hawk.profiling.mem import tracemalloc
+from hawk.profiling.cpu import cprofile
 from hawk.profiling.cpu import pyinstrument
 from hawk.profiling.cpu import yappi
 
 
 class ProfilerType(str, Enum):
     TRACEMALLOC = "tracemalloc"
+    CPROFILE = "cprofile"
     PYINSTRUMENT = "pyinstrument"
     YAPPI = "yappi"
 
@@ -43,6 +45,7 @@ class ProfileHandler(Protocol):
 
 PROFILERS: dict[ProfilerType, Type[ProfileHandler]] = {
     ProfilerType.TRACEMALLOC: tracemalloc.ProfileHandler,
+    ProfilerType.CPROFILE: cprofile.ProfileHandler,
     ProfilerType.PYINSTRUMENT: pyinstrument.ProfileHandler,
     ProfilerType.YAPPI: yappi.ProfileHandler,
 }
