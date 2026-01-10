@@ -26,7 +26,6 @@ from hawk.profiling.cpu.cprofile import (
 )
 from hawk.profiling.renderers import MimeType, RenderMode
 from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
-from hawk.profiling.trace_context import TraceContext
 
 
 def _do_some_work() -> int:
@@ -148,9 +147,8 @@ class TestRenderers:
     def test_text_renderer(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.TEXT)
         opt = ProfileOptions()
-        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt, trace_ctx)
+        rendered = renderer.render(profile_result, opt)
 
         assert rendered.mime_type == MimeType.TEXT
         assert rendered.render_mode == RenderMode.VIEW
@@ -164,9 +162,8 @@ class TestRenderers:
     def test_pstat_renderer(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.PSTAT)
         opt = ProfileOptions()
-        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt, trace_ctx)
+        rendered = renderer.render(profile_result, opt)
 
         assert rendered.mime_type == MimeType.BINARY
         assert rendered.render_mode == RenderMode.DOWNLOAD
@@ -178,9 +175,8 @@ class TestRenderers:
     def test_json_renderer(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.JSON)
         opt = ProfileOptions()
-        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt, trace_ctx)
+        rendered = renderer.render(profile_result, opt)
 
         assert rendered.mime_type == MimeType.JSON
         assert rendered.render_mode == RenderMode.VIEW
@@ -195,9 +191,8 @@ class TestRenderers:
     def test_json_renderer_content_structure(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.JSON)
         opt = ProfileOptions()
-        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt, trace_ctx)
+        rendered = renderer.render(profile_result, opt)
 
         assert isinstance(rendered.content, dict)
         func_stats = rendered.content["func_stats"]
@@ -218,9 +213,8 @@ class TestRenderers:
     def test_json_renderer_respects_limit(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.JSON)
         opt = ProfileOptions(limit=5)
-        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt, trace_ctx)
+        rendered = renderer.render(profile_result, opt)
 
         assert isinstance(rendered.content, dict)
         func_stats = rendered.content["func_stats"]

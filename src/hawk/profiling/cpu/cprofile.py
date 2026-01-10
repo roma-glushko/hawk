@@ -27,7 +27,6 @@ from typing import Any, Generator, Mapping, Protocol
 
 from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
 from hawk.profiling.renderers import MimeType, RenderMode, RenderedProfile
-from hawk.profiling.trace_context import TraceContext, profiling_span
 
 
 class ProfileFormat(str, Enum):
@@ -106,7 +105,7 @@ class CProfileProfiler:
 
 
 class Renderer(Protocol):
-    def render(self, profiler: cProfile.Profile, opt: ProfileOptions, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: cProfile.Profile, opt: ProfileOptions) -> RenderedProfile:
         ...
 
 
@@ -115,26 +114,21 @@ class TextRenderer:
     file_ext: str = "txt"
     render_mode: RenderMode = RenderMode.VIEW
 
-    def get_filename(self, trace_ctx: TraceContext) -> str:
+    def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        trace_suffix = trace_ctx.format_for_filename()
+        return f"hwk_cpu_cprofile_profile_{timestamp}.{self.file_ext}"
 
-        return f"hwk_cpu_cprofile_profile_{timestamp}{trace_suffix}.{self.file_ext}"
-
-    def render(self, profiler: cProfile.Profile, opt: ProfileOptions, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: cProfile.Profile, opt: ProfileOptions) -> RenderedProfile:
         s = io.StringIO()
         ps = pstats.Stats(profiler, stream=s).sort_stats(opt.sort_key.value)
         ps.print_stats(opt.limit)
         content = s.getvalue()
 
-        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
-
         return RenderedProfile(
-            file_name=self.get_filename(trace_ctx),
+            file_name=self.get_filename(),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
-            metadata=metadata,
         )
 
 
@@ -143,13 +137,11 @@ class PStatRenderer:
     file_ext: str = "pstat"
     render_mode: RenderMode = RenderMode.DOWNLOAD
 
-    def get_filename(self, trace_ctx: TraceContext) -> str:
+    def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        trace_suffix = trace_ctx.format_for_filename()
+        return f"hwk_cpu_cprofile_profile_{timestamp}.{self.file_ext}"
 
-        return f"hwk_cpu_cprofile_profile_{timestamp}{trace_suffix}.{self.file_ext}"
-
-    def render(self, profiler: cProfile.Profile, opt: ProfileOptions, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: cProfile.Profile, opt: ProfileOptions) -> RenderedProfile:
         # pstats.dump_stats requires a file path
         fd, temp_path = tempfile.mkstemp(suffix=".pstat")
         try:
@@ -161,14 +153,11 @@ class PStatRenderer:
         finally:
             os.unlink(temp_path)
 
-        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
-
         return RenderedProfile(
-            file_name=self.get_filename(trace_ctx),
+            file_name=self.get_filename(),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
-            metadata=metadata,
         )
 
 
@@ -177,18 +166,16 @@ class JSONRenderer:
     file_ext: str = "json"
     render_mode: RenderMode = RenderMode.VIEW
 
-    def get_filename(self, trace_ctx: TraceContext) -> str:
+    def get_filename(self) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        trace_suffix = trace_ctx.format_for_filename()
+        return f"hwk_cpu_cprofile_profile_{timestamp}.{self.file_ext}"
 
-        return f"hwk_cpu_cprofile_profile_{timestamp}{trace_suffix}.{self.file_ext}"
-
-    def render(self, profiler: cProfile.Profile, opt: ProfileOptions, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: cProfile.Profile, opt: ProfileOptions) -> RenderedProfile:
         ps = pstats.Stats(profiler)
         ps.sort_stats(opt.sort_key.value)
 
         func_stats: list[dict[str, Any]] = []
-        for key, value in ps.stats.items():
+        for key, value in ps.stats.items():  # type: ignore[attr-defined]
             filename, lineno, func_name = key
             ncalls, totcalls, tottime, cumtime, callers = value
 
@@ -217,22 +204,16 @@ class JSONRenderer:
         func_stats = func_stats[: opt.limit]
 
         content: dict[str, Any] = {
-            "total_calls": ps.total_calls,
-            "total_time": ps.total_tt,
+            "total_calls": ps.total_calls,  # type: ignore[attr-defined]
+            "total_time": ps.total_tt,  # type: ignore[attr-defined]
             "func_stats": func_stats,
         }
 
-        metadata = None
-        if trace_ctx.is_valid:
-            content["trace_context"] = trace_ctx.to_dict()
-            metadata = trace_ctx.to_dict()
-
         return RenderedProfile(
-            file_name=self.get_filename(trace_ctx),
+            file_name=self.get_filename(),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=content,
-            metadata=metadata,
         )
 
 
@@ -259,29 +240,17 @@ class ProfileHandler:
         self._format = ProfileFormat(query_params.get("format", ProfileFormat.TEXT.value))
 
         self._profiler: cProfile.Profile | None = None
-        self._trace_ctx: TraceContext | None = None
 
     @contextmanager
     def profile(self) -> Generator[None, None, None]:
-        span_attributes = {
-            "hawk.format": self._format.value,
-            "hawk.sort_key": self._opt.sort_key.value,
-            "hawk.limit": self._opt.limit,
-        }
-
-        with profiling_span("cpu", "cprofile", span_attributes):
-            # Capture trace context at the start of profiling (inside the span)
-            self._trace_ctx = TraceContext.from_current_span()
-
-            with profiler.profile() as p:
-                self._profiler = p
-                yield
+        with profiler.profile() as p:
+            self._profiler = p
+            yield
 
     def render_profile(self) -> RenderedProfile:
         if not self._profiler:
             raise ProfilingNotStarted("Profiler is not started yet")
 
         renderer = get_renderer(self._format)
-        trace_ctx = self._trace_ctx or TraceContext()
 
-        return renderer.render(self._profiler, self._opt, trace_ctx)
+        return renderer.render(self._profiler, self._opt)
