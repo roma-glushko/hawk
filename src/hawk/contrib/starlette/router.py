@@ -37,31 +37,23 @@ except ImportError as e:
 
 
 async def profile_memory_tracemalloc(request: Request) -> Response:
-    duration = int(request.query_params.get("duration", 5))
-    frames = int(request.query_params.get("frames", 30))
-    gc = request.query_params.get("gc", "true").lower() in ["true", "1"]
-    count = int(request.query_params.get("count", 10))
-    format = trmalloc.ProfileFormat(request.query_params.get("format", trmalloc.ProfileFormat.LINENO))
-    cumulative = request.query_params.get("cumulative", "false").lower() in ["true", "1"]
-
-    opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
+    query_params = request.query_params
+    duration = int(query_params.get("duration", 5))
+    opt = trmalloc.ProfileOptions.from_query_params(query_params)
+    render_opt = trmalloc.RendererOptions.from_query_params(query_params)
+    format = trmalloc.ProfileFormat(query_params.get("format", trmalloc.ProfileFormat.LINENO))
 
     with trmalloc.profiler.profile(opt) as profile:
         await asyncio.sleep(duration)
 
-    render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
     renderer = trmalloc.get_renderer(format)
-
     rendered_profile = renderer.render(profile, render_opt)
 
     return format_response(rendered_profile)
 
 
 async def start_manual_memory_tracemalloc_profile(request: Request) -> Response:
-    frames = int(request.query_params.get("frames", 30))
-    gc = request.query_params.get("gc", "true").lower() in ["true", "1"]
-
-    opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
+    opt = trmalloc.ProfileOptions.from_query_params(request.query_params)
 
     trmalloc.profiler.start(opt)
 
@@ -69,16 +61,14 @@ async def start_manual_memory_tracemalloc_profile(request: Request) -> Response:
 
 
 async def snapshot_memory_tracemalloc_manually(request: Request) -> Response:
-    count = int(request.query_params.get("count", 10))
-    format = trmalloc.ProfileFormat(request.query_params.get("format", trmalloc.ProfileFormat.LINENO))
-    cumulative = request.query_params.get("cumulative", "false").lower() in ["true", "1"]
+    query_params = request.query_params
+    render_opt = trmalloc.RendererOptions.from_query_params(query_params)
+    format = trmalloc.ProfileFormat(query_params.get("format", trmalloc.ProfileFormat.LINENO))
 
     profile = trmalloc.profiler.snapshot()
 
-    opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
     renderer = trmalloc.get_renderer(format)
-
-    profile_content = renderer.render(profile, opt)
+    profile_content = renderer.render(profile, render_opt)
 
     return format_response(profile_content)
 
@@ -91,18 +81,10 @@ async def stop_manual_memory_tracemalloc_profile(request: Request) -> Response:
 
 # Pyinstrument CPU profiler endpoints
 async def profile_cpu_pyinstrument(request: Request) -> Response:
-    duration = int(request.query_params.get("duration", 5))
-    interval = float(request.query_params.get("interval", 0.001))
-    async_mode = pyinstr.AsyncModes(request.query_params.get("async_mode", pyinstr.AsyncModes.ENABLED.value))
-    use_timing_thread_param = request.query_params.get("use_timing_thread")
-    use_timing_thread = None if use_timing_thread_param is None else use_timing_thread_param.lower() in ["true", "1"]
-    format = pyinstr.ProfileFormat(request.query_params.get("format", pyinstr.ProfileFormat.HTML.value))
-
-    opt = pyinstr.ProfileOptions(
-        interval=interval,
-        use_timing_thread=use_timing_thread,
-        async_mode=async_mode,
-    )
+    query_params = request.query_params
+    duration = int(query_params.get("duration", 5))
+    opt = pyinstr.ProfileOptions.from_query_params(query_params)
+    format = pyinstr.ProfileFormat(query_params.get("format", pyinstr.ProfileFormat.HTML.value))
 
     with pyinstr.profiler.profile(opt) as profiler:
         await asyncio.sleep(duration)
@@ -114,16 +96,7 @@ async def profile_cpu_pyinstrument(request: Request) -> Response:
 
 
 async def start_manual_cpu_pyinstrument_profile(request: Request) -> Response:
-    interval = float(request.query_params.get("interval", 0.001))
-    async_mode = pyinstr.AsyncModes(request.query_params.get("async_mode", pyinstr.AsyncModes.ENABLED.value))
-    use_timing_thread_param = request.query_params.get("use_timing_thread")
-    use_timing_thread = None if use_timing_thread_param is None else use_timing_thread_param.lower() in ["true", "1"]
-
-    opt = pyinstr.ProfileOptions(
-        interval=interval,
-        use_timing_thread=use_timing_thread,
-        async_mode=async_mode,
-    )
+    opt = pyinstr.ProfileOptions.from_query_params(request.query_params)
 
     pyinstr.profiler.start(opt)
 
@@ -143,17 +116,10 @@ async def stop_manual_cpu_pyinstrument_profile(request: Request) -> Response:
 
 # Yappi CPU profiler endpoints
 async def profile_cpu_yappi(request: Request) -> Response:
-    duration = int(request.query_params.get("duration", 5))
-    clock_type = yp.ClockType(request.query_params.get("clock_type", yp.ClockType.CPU.value))
-    builtins = request.query_params.get("builtins", "false").lower() in ["true", "1"]
-    multithreaded = request.query_params.get("multithreaded", "true").lower() in ["true", "1"]
-    format = yp.ProfileFormat(request.query_params.get("format", yp.ProfileFormat.FUNC_STATS.value))
-
-    opt = yp.ProfileOptions(
-        clock_type=clock_type,
-        builtins=builtins,
-        multithreaded=multithreaded,
-    )
+    query_params = request.query_params
+    duration = int(query_params.get("duration", 5))
+    opt = yp.ProfileOptions.from_query_params(query_params)
+    format = yp.ProfileFormat(query_params.get("format", yp.ProfileFormat.FUNC_STATS.value))
 
     with yp.profiler.profile(opt) as result:
         await asyncio.sleep(duration)
@@ -165,15 +131,7 @@ async def profile_cpu_yappi(request: Request) -> Response:
 
 
 async def start_manual_cpu_yappi_profile(request: Request) -> Response:
-    clock_type = yp.ClockType(request.query_params.get("clock_type", yp.ClockType.CPU.value))
-    builtins = request.query_params.get("builtins", "false").lower() in ["true", "1"]
-    multithreaded = request.query_params.get("multithreaded", "true").lower() in ["true", "1"]
-
-    opt = yp.ProfileOptions(
-        clock_type=clock_type,
-        builtins=builtins,
-        multithreaded=multithreaded,
-    )
+    opt = yp.ProfileOptions.from_query_params(request.query_params)
 
     yp.profiler.start(opt)
 
@@ -193,10 +151,10 @@ async def stop_manual_cpu_yappi_profile(request: Request) -> Response:
 
 # Thread profiler endpoint (snapshot-based)
 async def snapshot_threads(request: Request) -> Response:
-    max_depth = int(request.query_params.get("max_depth", 128))
-    format = th.ProfileFormat(request.query_params.get("format", th.ProfileFormat.JSON.value))
+    query_params = request.query_params
+    opt = th.ProfileOptions.from_query_params(query_params)
+    format = th.ProfileFormat(query_params.get("format", th.ProfileFormat.JSON.value))
 
-    opt = th.ProfileOptions(max_depth=max_depth)
     snapshot = th.take_snapshot(opt)
 
     renderer = th.get_renderer(format)
