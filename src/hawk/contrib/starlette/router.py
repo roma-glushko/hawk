@@ -27,7 +27,7 @@ from hawk.zpages import ZPageFormat
 try:
     from starlette.requests import Request
     from starlette.responses import Response, HTMLResponse, JSONResponse
-    from starlette.routing import Router, BaseRoute, Middleware, Route
+    from starlette.routing import Router, BaseRoute, Middleware
 except ImportError as e:
     raise ImportError(
         "Starlette is required to use the hawk.contrib.starlette packages. "

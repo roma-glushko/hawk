@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 
-from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.renderers import RenderMode, RenderedProfile
 
 try:
     from flask import Response
