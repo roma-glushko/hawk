@@ -22,6 +22,7 @@ from hawk.profiling.mem import tracemalloc
 from hawk.profiling.cpu import cprofile
 from hawk.profiling.cpu import pyinstrument
 from hawk.profiling.cpu import yappi
+from hawk.profiling.thread import threads
 
 
 class ProfilerType(str, Enum):
@@ -29,6 +30,7 @@ class ProfilerType(str, Enum):
     CPROFILE = "cprofile"
     PYINSTRUMENT = "pyinstrument"
     YAPPI = "yappi"
+    THREADS = "threads"
 
 
 class ProfileHandler(Protocol):
@@ -48,6 +50,7 @@ PROFILERS: dict[ProfilerType, Type[ProfileHandler]] = {
     ProfilerType.CPROFILE: cprofile.ProfileHandler,
     ProfilerType.PYINSTRUMENT: pyinstrument.ProfileHandler,
     ProfilerType.YAPPI: yappi.ProfileHandler,
+    ProfilerType.THREADS: threads.ProfileHandler,
 }
 
 

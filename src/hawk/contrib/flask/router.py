@@ -20,6 +20,7 @@ from hawk.expvars.zpage import register_expvars_zpage
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
 import hawk.profiling.cpu.yappi as yp
+import hawk.profiling.thread.threads as th
 from hawk.contrib.flask.response import format_response
 from hawk.zpages import ZPageFormat
 
@@ -212,6 +213,20 @@ def get_blueprint(
             profile = renderer.render(result)
 
             return format_response(profile)
+
+    # Thread profiler route (snapshot-based)
+    @bp.route('/prof/threads/', methods=['GET'])
+    def snapshot_threads():
+        max_depth = int(request.args.get("max_depth", 128))
+        format = th.ProfileFormat(request.args.get("format", th.ProfileFormat.JSON.value))
+
+        opt = th.ProfileOptions(max_depth=max_depth)
+        snapshot = th.take_snapshot(opt)
+
+        renderer = th.get_renderer(format)
+        rendered_profile = renderer.render(snapshot)
+
+        return format_response(rendered_profile)
 
     # ZPages route - catch-all for dynamic page routes
     @bp.route('/<path:page_route>/', methods=['GET'])

@@ -21,6 +21,7 @@ from hawk.expvars.zpage import register_expvars_zpage
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
 import hawk.profiling.cpu.yappi as yp
+import hawk.profiling.thread.threads as th
 from hawk.contrib.starlette.response import format_response
 from hawk.zpages import ZPageFormat
 
@@ -190,6 +191,20 @@ async def stop_manual_cpu_yappi_profile(request: Request) -> Response:
     return format_response(profile)
 
 
+# Thread profiler endpoint (snapshot-based)
+async def snapshot_threads(request: Request) -> Response:
+    max_depth = int(request.query_params.get("max_depth", 128))
+    format = th.ProfileFormat(request.query_params.get("format", th.ProfileFormat.JSON.value))
+
+    opt = th.ProfileOptions(max_depth=max_depth)
+    snapshot = th.take_snapshot(opt)
+
+    renderer = th.get_renderer(format)
+    rendered_profile = renderer.render(snapshot)
+
+    return format_response(rendered_profile)
+
+
 # ZPages endpoint
 async def get_zpage(request: Request) -> Response:
     page_route = request.path_params.get("page_route", "")
@@ -264,6 +279,9 @@ def get_router(
         router.add_route('/prof/cpu/yappi/', profile_cpu_yappi, methods=['GET'])
         router.add_route('/prof/cpu/yappi/start/', start_manual_cpu_yappi_profile, methods=['GET'])
         router.add_route('/prof/cpu/yappi/stop/', stop_manual_cpu_yappi_profile, methods=['GET'])
+
+    # Thread profiler route (snapshot-based)
+    router.add_route('/prof/threads/', snapshot_threads, methods=['GET'])
 
     # ZPages route - catch-all for dynamic page routes
     router.add_route('/{page_route:path}/', get_zpage, methods=['GET'])
