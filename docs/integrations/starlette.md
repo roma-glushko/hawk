@@ -1,6 +1,10 @@
 # Starlette Integration
 
-Debug and profiling support for Starlette applications.
+<div align="center" style="display: flex; justify-content: center; align-items: center">
+    <img src="/assets/contrib/starlette.svg" width="300px" alt="Starlette Logo" />
+</div>
+
+Debug and profiling support for [Starlette applications](https://starlette.dev/).
 
 ## Setup
 

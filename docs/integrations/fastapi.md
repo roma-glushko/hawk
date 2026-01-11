@@ -1,6 +1,10 @@
 # FastAPI Integration
 
-Full-featured integration with all Hawk capabilities.
+<div align="center" style="display: flex; justify-content: center; align-items: center">
+    <img src="/assets/contrib/fastapi.png" width="300px" alt="FastAPI Logo" />
+</div>
+
+Full-featured [FastAPI integration](https://fastapi.tiangolo.com/) with all Hawk capabilities.
 
 ## Setup
 

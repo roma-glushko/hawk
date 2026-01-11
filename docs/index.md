@@ -11,10 +11,10 @@ OpenTelemetry Collector's ZPages which are in turn stemmed from Google's interna
 debugging production services.
 
 <p align="center">Hawk plays well with your favorite frameworks:</p>
-<div align="center">
-    <a href="/integrations/fastapi/"><img src="assets/contrib/fastapi.png" width="150px" alt="FastAPI Logo" /></a>
-    <a href="/integrations/starlette/"><img src="assets/contrib/starlette.svg" style="height: 80px" width="150px" alt="Starlette Logo" /></a>
-    <a href="/integrations/flask/"><img src="assets/contrib/flask.png" width="150px" alt="Flask Logo" /></a>
+<div align="center" style="display: flex; justify-content: center; align-items: center">
+    <a href="/integrations/fastapi/"><img src="/assets/contrib/fastapi.png" width="150px" alt="FastAPI Logo" /></a>
+    <a href="/integrations/starlette/"><img src="/assets/contrib/starlette.svg" style="height: 80px" width="150px" alt="Starlette Logo" /></a>
+    <a href="/integrations/flask/"><img src="/assets/contrib/flask.png" width="150px" alt="Flask Logo" /></a>
 </div>
 
 ## Installation
