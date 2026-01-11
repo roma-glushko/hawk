@@ -56,6 +56,12 @@ GET /debug/prof/cpu/yappi/start/           # Start profiling
 GET /debug/prof/cpu/yappi/stop/            # Stop and get results
 ```
 
+### Thread Inspection
+
+```
+GET /debug/prof/threads/                   # Snapshot all thread stacks
+```
+
 ### ZPages
 
 ```

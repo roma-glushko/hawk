@@ -10,6 +10,7 @@ Hawk provides on-demand profiling for production services.
 | [CPU](cpu.md) | cProfile | Built-in, no dependencies, standard tooling |
 | [CPU](cpu.md) | PyInstrument | Async-aware sampling, flame graphs |
 | [CPU](cpu.md) | Yappi | Multi-threaded, precise timing |
+| [Threads](threads.md) | threads | Inspect thread stacks, debug deadlocks |
 
 ## Profiling Modes
 
