@@ -21,8 +21,6 @@ from hawk.profiling.thread.threads import (
     ProfileFormat,
     ProfileHandler,
     ThreadSnapshot,
-    ThreadInfo,
-    ThreadFrame,
     take_snapshot,
     get_renderer,
 )
@@ -86,8 +84,6 @@ class TestTakeSnapshot:
                 assert isinstance(frame.lineno, int)
 
     def test_snapshot_captures_spawned_threads(self) -> None:
-        result = {"captured": False}
-
         def worker():
             time.sleep(0.5)
 
@@ -157,6 +153,7 @@ class TestJSONRenderer:
 
         rendered = renderer.render(snapshot, trace_ctx)
 
+        assert isinstance(rendered.content, dict)
         threads = rendered.content["threads"]
         assert len(threads) > 0
 
