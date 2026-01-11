@@ -116,7 +116,7 @@ class PyInstrumentProfiler:
 
 
 class Renderer(Protocol):
-    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext | None = None) -> RenderedProfile:
         ...
 
 
@@ -137,8 +137,10 @@ class JSONRenderer:
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext | None = None) -> RenderedProfile:
         import json
+
+        trace_ctx = trace_ctx or TraceContext()
 
         content = profiler.output(renderer=self._renderer)
         metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
@@ -175,7 +177,9 @@ class HTMLRenderer:
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext | None = None) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
+
         content = profiler.output(renderer=self._renderer)
         metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
 
@@ -205,8 +209,10 @@ class SpeedscopeRenderer:
 
         return f"hwk_cpu_pyinstr_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, profiler: "pyinstrument.Profiler", trace_ctx: TraceContext | None = None) -> RenderedProfile:
         import json
+
+        trace_ctx = trace_ctx or TraceContext()
 
         content = profiler.output(renderer=self._renderer)
         metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None

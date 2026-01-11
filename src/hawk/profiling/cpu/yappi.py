@@ -127,7 +127,7 @@ class YappiProfiler:
 
 
 class Renderer(Protocol):
-    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext | None = None) -> RenderedProfile:
         ...
 
 
@@ -146,7 +146,9 @@ class PStatRenderer:
 
         return f"hwk_cpu_yappi_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext | None = None) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
+
         # Yappi's pstat save requires a file path, not a file object
         fd, temp_path = tempfile.mkstemp(suffix=".pstat")
         try:
@@ -183,7 +185,9 @@ class CallgrindRenderer:
 
         return f"hwk_cpu_yappi_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext | None = None) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
+
         # Yappi's callgrind save requires a file path, not a file object
         fd, temp_path = tempfile.mkstemp(suffix=".callgrind")
         try:
@@ -220,7 +224,9 @@ class FuncStatsRenderer:
 
         return f"hwk_cpu_yappi_profile_{timestamp}{trace_suffix}.{self.file_ext}"
 
-    def render(self, result: ProfileResult, trace_ctx: TraceContext) -> RenderedProfile:
+    def render(self, result: ProfileResult, trace_ctx: TraceContext | None = None) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
+
         func_stats_list: list[dict[str, Any]] = []
 
         for stat in result.func_stats:

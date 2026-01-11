@@ -197,7 +197,7 @@ class Renderer(Protocol):
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
-        trace_ctx: TraceContext,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
         ...
 
@@ -217,8 +217,10 @@ class LinenoSnapshotRenderer:
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
-        trace_ctx: TraceContext,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
+
         if isinstance(profile, PointInTimeProfile):
             return self._render_point_in_time_profile(profile, opt.count, opt.cumulative, trace_ctx)
 
@@ -336,11 +338,13 @@ class TracebackSnapshotRender:
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
-        trace_ctx: TraceContext,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
         """
         Render the snapshot in a human-readable format
         """
+        trace_ctx = trace_ctx or TraceContext()
+
         if isinstance(profile, PointInTimeProfile):
             return self._render_point_in_time_profile(profile, opt.count, trace_ctx)
 
@@ -448,11 +452,13 @@ class PickleSnapshotRenderer:
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
-        trace_ctx: TraceContext,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
         """
         Pickling the snapshot class to be able to analyze it later via loading it with `Snapshot.load()`
         """
+        trace_ctx = trace_ctx or TraceContext()
+
         snapshot: tracemalloc.Snapshot
 
         if isinstance(profile, PointInTimeProfile):

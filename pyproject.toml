@@ -72,3 +72,13 @@ __version__ = "{version}"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/hawk"]
+
+[tool.mypy]
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = [
+    "opentelemetry",
+    "opentelemetry.*",
+]
+ignore_missing_imports = true

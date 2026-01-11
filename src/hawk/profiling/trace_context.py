@@ -18,8 +18,8 @@ from dataclasses import dataclass
 from typing import Any, Generator
 
 try:
-    from opentelemetry import trace
-    from opentelemetry.trace import INVALID_SPAN_ID, INVALID_TRACE_ID, Span, Tracer
+    from opentelemetry import trace  # type: ignore[import-not-found]
+    from opentelemetry.trace import INVALID_SPAN_ID, INVALID_TRACE_ID, Span, Tracer  # type: ignore[import-not-found]
     _otel_available = True
 except ImportError:
     _otel_available = False
