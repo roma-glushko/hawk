@@ -93,7 +93,7 @@ nav:
     - Intro: profiling/index.md
     - CPU: profiling/cpu.md
     - Memory: profiling/memory.md
-    - Miscellaneous: profiling/misc.md
+    - Threads: profiling/threads.md
 - Debug Vars: debug-variables.md
 - ZPages: zpages.md
 - Integrations:

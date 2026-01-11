@@ -1,6 +1,6 @@
 # Starlette Integration
 
-Memory profiling support for Starlette applications.
+Debug and profiling support for Starlette applications.
 
 ## Setup
 
@@ -16,6 +16,8 @@ app = Starlette(routes=[
 
 ## Available Endpoints
 
+### Memory Profiling (tracemalloc)
+
 ```
 GET /debug/prof/mem/tracemalloc/           # Fixed duration profile
 GET /debug/prof/mem/tracemalloc/start/     # Start tracing
@@ -23,25 +25,67 @@ GET /debug/prof/mem/tracemalloc/snapshot/  # Take snapshot
 GET /debug/prof/mem/tracemalloc/stop/      # Stop tracing
 ```
 
-## Parameters
+### CPU Profiling (PyInstrument)
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `duration` | 5 | Profiling duration in seconds |
-| `format` | lineno | Output: `lineno`, `traceback`, `pickle` |
-| `frames` | 30 | Stack frames to capture |
-| `count` | 10 | Number of top allocations |
-| `gc` | true | Run GC before profiling |
-| `cumulative` | false | Show cumulative stats |
+Requires: `pip install hawk-debug[pyinstrument]`
 
-## Middleware
+```
+GET /debug/prof/cpu/pyinstrument/          # Fixed duration profile
+GET /debug/prof/cpu/pyinstrument/start/    # Start profiling
+GET /debug/prof/cpu/pyinstrument/stop/     # Stop and get results
+```
 
-For request-level profiling:
+### CPU Profiling (Yappi)
+
+Requires: `pip install hawk-debug[yappi]`
+
+```
+GET /debug/prof/cpu/yappi/                 # Fixed duration profile
+GET /debug/prof/cpu/yappi/start/           # Start profiling
+GET /debug/prof/cpu/yappi/stop/            # Stop and get results
+```
+
+### Thread Inspection
+
+```
+GET /debug/prof/threads/                   # Snapshot all thread stacks
+```
+
+### ZPages
+
+```
+GET /debug/<page_route>/                   # Access registered ZPages
+GET /debug/vars/                           # Debug variables (if enabled)
+```
+
+## Example
 
 ```python
-from hawk.contrib.starlette import DebugMiddleware
+from starlette.applications import Starlette
+from starlette.routing import Mount, Route
+from starlette.responses import PlainTextResponse
+from hawk.contrib.starlette import get_router
 
-app = Starlette(middleware=[
-    Middleware(DebugMiddleware),
+async def homepage(request):
+    return PlainTextResponse("Hello!")
+
+app = Starlette(routes=[
+    Route("/", homepage),
+    Mount("/debug", app=get_router()),
 ])
 ```
+
+Profile your app:
+
+```bash
+# Memory profiling
+curl "http://localhost:8000/debug/prof/mem/tracemalloc/?duration=10&count=20"
+
+# CPU profiling with PyInstrument
+curl "http://localhost:8000/debug/prof/cpu/pyinstrument/?duration=5"
+
+# Thread inspection
+curl "http://localhost:8000/debug/prof/threads/"
+```
+
+See [Profiling](../profiling/index.md) for detailed parameter documentation.

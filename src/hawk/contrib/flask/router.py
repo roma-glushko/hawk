@@ -20,6 +20,7 @@ from hawk.expvars.zpage import register_expvars_zpage
 import hawk.profiling.mem.tracemalloc as trmalloc
 import hawk.profiling.cpu.pyinstrument as pyinstr
 import hawk.profiling.cpu.yappi as yp
+import hawk.profiling.thread.threads as th
 from hawk.contrib.flask.response import format_response
 from hawk.zpages import ZPageFormat
 
@@ -58,31 +59,23 @@ def get_blueprint(
     # Memory profiler routes (tracemalloc)
     @bp.route('/prof/mem/tracemalloc/', methods=['GET'])
     def profile_memory_tracemalloc():
-        duration = int(request.args.get("duration", 5))
-        frames = int(request.args.get("frames", 30))
-        gc = request.args.get("gc", "true").lower() in ["true", "1"]
-        count = int(request.args.get("count", 10))
-        format = trmalloc.ProfileFormat(request.args.get("format", trmalloc.ProfileFormat.LINENO))
-        cumulative = request.args.get("cumulative", "false").lower() in ["true", "1"]
-
-        opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
+        query_params = request.args
+        duration = int(query_params.get("duration", 5))
+        opt = trmalloc.ProfileOptions.from_query_params(query_params)
+        render_opt = trmalloc.RendererOptions.from_query_params(query_params)
+        format = trmalloc.ProfileFormat(query_params.get("format", trmalloc.ProfileFormat.LINENO))
 
         with trmalloc.profiler.profile(opt) as profile:
             time.sleep(duration)
 
-        render_opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
-
         rendered_profile = renderer.render(profile, render_opt)
 
         return format_response(rendered_profile)
 
     @bp.route('/prof/mem/tracemalloc/start/', methods=['GET'])
     def start_manual_memory_tracemalloc_profile():
-        frames = int(request.args.get("frames", 30))
-        gc = request.args.get("gc", "true").lower() in ["true", "1"]
-
-        opt = trmalloc.ProfileOptions(frames=frames, gc=gc)
+        opt = trmalloc.ProfileOptions.from_query_params(request.args)
 
         trmalloc.profiler.start(opt)
 
@@ -90,16 +83,14 @@ def get_blueprint(
 
     @bp.route('/prof/mem/tracemalloc/snapshot/', methods=['GET'])
     def snapshot_memory_tracemalloc_manually():
-        count = int(request.args.get("count", 10))
-        format = trmalloc.ProfileFormat(request.args.get("format", trmalloc.ProfileFormat.LINENO))
-        cumulative = request.args.get("cumulative", "false").lower() in ["true", "1"]
+        query_params = request.args
+        render_opt = trmalloc.RendererOptions.from_query_params(query_params)
+        format = trmalloc.ProfileFormat(query_params.get("format", trmalloc.ProfileFormat.LINENO))
 
         profile = trmalloc.profiler.snapshot()
 
-        opt = trmalloc.RendererOptions(count=count, cumulative=cumulative)
         renderer = trmalloc.get_renderer(format)
-
-        rendered_profile = renderer.render(profile, opt)
+        rendered_profile = renderer.render(profile, render_opt)
 
         return format_response(rendered_profile)
 
@@ -113,18 +104,10 @@ def get_blueprint(
     if pyinstr.pyinstrument is not None:
         @bp.route('/prof/cpu/pyinstrument/', methods=['GET'])
         def profile_cpu_pyinstrument():
-            duration = int(request.args.get("duration", 5))
-            interval = float(request.args.get("interval", 0.001))
-            async_mode = pyinstr.AsyncModes(request.args.get("async_mode", pyinstr.AsyncModes.ENABLED.value))
-            use_timing_thread_param = request.args.get("use_timing_thread")
-            use_timing_thread = None if use_timing_thread_param is None else use_timing_thread_param.lower() in ["true", "1"]
-            format = pyinstr.ProfileFormat(request.args.get("format", pyinstr.ProfileFormat.HTML.value))
-
-            opt = pyinstr.ProfileOptions(
-                interval=interval,
-                use_timing_thread=use_timing_thread,
-                async_mode=async_mode,
-            )
+            query_params = request.args
+            duration = int(query_params.get("duration", 5))
+            opt = pyinstr.ProfileOptions.from_query_params(query_params)
+            format = pyinstr.ProfileFormat(query_params.get("format", pyinstr.ProfileFormat.HTML.value))
 
             with pyinstr.profiler.profile(opt) as profiler:
                 time.sleep(duration)
@@ -136,16 +119,7 @@ def get_blueprint(
 
         @bp.route('/prof/cpu/pyinstrument/start/', methods=['GET'])
         def start_manual_cpu_pyinstrument_profile():
-            interval = float(request.args.get("interval", 0.001))
-            async_mode = pyinstr.AsyncModes(request.args.get("async_mode", pyinstr.AsyncModes.ENABLED.value))
-            use_timing_thread_param = request.args.get("use_timing_thread")
-            use_timing_thread = None if use_timing_thread_param is None else use_timing_thread_param.lower() in ["true", "1"]
-
-            opt = pyinstr.ProfileOptions(
-                interval=interval,
-                use_timing_thread=use_timing_thread,
-                async_mode=async_mode,
-            )
+            opt = pyinstr.ProfileOptions.from_query_params(request.args)
 
             pyinstr.profiler.start(opt)
 
@@ -166,17 +140,10 @@ def get_blueprint(
     if yp.yappi is not None:
         @bp.route('/prof/cpu/yappi/', methods=['GET'])
         def profile_cpu_yappi():
-            duration = int(request.args.get("duration", 5))
-            clock_type = yp.ClockType(request.args.get("clock_type", yp.ClockType.CPU.value))
-            builtins = request.args.get("builtins", "false").lower() in ["true", "1"]
-            multithreaded = request.args.get("multithreaded", "true").lower() in ["true", "1"]
-            format = yp.ProfileFormat(request.args.get("format", yp.ProfileFormat.FUNC_STATS.value))
-
-            opt = yp.ProfileOptions(
-                clock_type=clock_type,
-                builtins=builtins,
-                multithreaded=multithreaded,
-            )
+            query_params = request.args
+            duration = int(query_params.get("duration", 5))
+            opt = yp.ProfileOptions.from_query_params(query_params)
+            format = yp.ProfileFormat(query_params.get("format", yp.ProfileFormat.FUNC_STATS.value))
 
             with yp.profiler.profile(opt) as result:
                 time.sleep(duration)
@@ -188,15 +155,7 @@ def get_blueprint(
 
         @bp.route('/prof/cpu/yappi/start/', methods=['GET'])
         def start_manual_cpu_yappi_profile():
-            clock_type = yp.ClockType(request.args.get("clock_type", yp.ClockType.CPU.value))
-            builtins = request.args.get("builtins", "false").lower() in ["true", "1"]
-            multithreaded = request.args.get("multithreaded", "true").lower() in ["true", "1"]
-
-            opt = yp.ProfileOptions(
-                clock_type=clock_type,
-                builtins=builtins,
-                multithreaded=multithreaded,
-            )
+            opt = yp.ProfileOptions.from_query_params(request.args)
 
             yp.profiler.start(opt)
 
@@ -212,6 +171,20 @@ def get_blueprint(
             profile = renderer.render(result)
 
             return format_response(profile)
+
+    # Thread profiler route (snapshot-based)
+    @bp.route('/prof/threads/', methods=['GET'])
+    def snapshot_threads():
+        query_params = request.args
+        opt = th.ProfileOptions.from_query_params(query_params)
+        format = th.ProfileFormat(query_params.get("format", th.ProfileFormat.JSON.value))
+
+        snapshot = th.take_snapshot(opt)
+
+        renderer = th.get_renderer(format)
+        rendered_profile = renderer.render(snapshot)
+
+        return format_response(rendered_profile)
 
     # ZPages route - catch-all for dynamic page routes
     @bp.route('/<path:page_route>/', methods=['GET'])

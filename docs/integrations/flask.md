@@ -1,44 +1,69 @@
 # Flask Integration
 
-Memory profiling support for Flask applications.
+Debug and profiling support for Flask applications.
 
 ## Setup
 
 ```python
 from flask import Flask
-from hawk.contrib.flask import create_debug_blueprint
+from hawk.contrib.flask import get_blueprint
 
 app = Flask(__name__)
-app.register_blueprint(create_debug_blueprint(), url_prefix="/debug")
+app.register_blueprint(get_blueprint(), url_prefix="/debug")
 ```
 
 ## Available Endpoints
 
+### Memory Profiling (tracemalloc)
+
 ```
-GET /debug/prof/mem/                # Fixed duration profile
-GET /debug/prof/mem/start/          # Start tracing
-GET /debug/prof/mem/snapshot/       # Take snapshot
-GET /debug/prof/mem/stop/           # Stop tracing
+GET /debug/prof/mem/tracemalloc/           # Fixed duration profile
+GET /debug/prof/mem/tracemalloc/start/     # Start tracing
+GET /debug/prof/mem/tracemalloc/snapshot/  # Take snapshot
+GET /debug/prof/mem/tracemalloc/stop/      # Stop tracing
 ```
 
-## Parameters
+### CPU Profiling (PyInstrument)
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `duration` | 5 | Profiling duration in seconds |
-| `format` | lineno | Output: `lineno`, `traceback`, `pickle` |
-| `frames` | 30 | Stack frames to capture |
-| `count` | 10 | Number of top allocations |
-| `cumulative` | false | Show cumulative stats |
+Requires: `pip install hawk-debug[pyinstrument]`
+
+```
+GET /debug/prof/cpu/pyinstrument/          # Fixed duration profile
+GET /debug/prof/cpu/pyinstrument/start/    # Start profiling
+GET /debug/prof/cpu/pyinstrument/stop/     # Stop and get results
+```
+
+### CPU Profiling (Yappi)
+
+Requires: `pip install hawk-debug[yappi]`
+
+```
+GET /debug/prof/cpu/yappi/                 # Fixed duration profile
+GET /debug/prof/cpu/yappi/start/           # Start profiling
+GET /debug/prof/cpu/yappi/stop/            # Stop and get results
+```
+
+### Thread Inspection
+
+```
+GET /debug/prof/threads/                   # Snapshot all thread stacks
+```
+
+### ZPages
+
+```
+GET /debug/<page_route>/                   # Access registered ZPages
+GET /debug/vars/                           # Debug variables (if enabled)
+```
 
 ## Example
 
 ```python
 from flask import Flask
-from hawk.contrib.flask import create_debug_blueprint
+from hawk.contrib.flask import get_blueprint
 
 app = Flask(__name__)
-app.register_blueprint(create_debug_blueprint(), url_prefix="/debug")
+app.register_blueprint(get_blueprint(), url_prefix="/debug")
 
 @app.route("/")
 def index():
@@ -51,5 +76,14 @@ if __name__ == "__main__":
 Profile your app:
 
 ```bash
-curl "http://localhost:5000/debug/prof/mem/?duration=10&count=20"
+# Memory profiling
+curl "http://localhost:5000/debug/prof/mem/tracemalloc/?duration=10&count=20"
+
+# CPU profiling with PyInstrument
+curl "http://localhost:5000/debug/prof/cpu/pyinstrument/?duration=5"
+
+# Thread inspection
+curl "http://localhost:5000/debug/prof/threads/"
 ```
+
+See [Profiling](../profiling/index.md) for detailed parameter documentation.
