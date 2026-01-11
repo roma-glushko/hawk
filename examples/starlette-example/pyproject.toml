@@ -1,0 +1,22 @@
+[project]
+name = "starlette-example"
+version = "0.0.1"
+description = "Starlette example for Hawk debug toolkit"
+authors = [
+    {name = "Roman Hlushko", email = "roman.glushko.m@gmail.com"},
+]
+dependencies = [
+    "starlette>=0.38.0",
+    "uvicorn[standard]>=0.30.0",
+]
+requires-python = ">=3.12"
+readme = "README.md"
+license = {text = "MIT"}
+
+[tool.uv]
+dev-dependencies = [
+    "hawk-debug[pyinstrument,zpages]",
+]
+
+[tool.uv.sources]
+hawk-debug = { path = "../..", editable = true }
