@@ -26,6 +26,7 @@ from hawk.profiling.cpu.cprofile import (
 )
 from hawk.profiling.renderers import MimeType, RenderMode
 from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+from hawk.profiling.trace_context import TraceContext
 
 
 def _do_some_work() -> int:
@@ -147,8 +148,9 @@ class TestRenderers:
     def test_text_renderer(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.TEXT)
         opt = ProfileOptions()
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt)
+        rendered = renderer.render(profile_result, opt, trace_ctx)
 
         assert rendered.mime_type == MimeType.TEXT
         assert rendered.render_mode == RenderMode.VIEW
@@ -162,8 +164,9 @@ class TestRenderers:
     def test_pstat_renderer(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.PSTAT)
         opt = ProfileOptions()
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt)
+        rendered = renderer.render(profile_result, opt, trace_ctx)
 
         assert rendered.mime_type == MimeType.BINARY
         assert rendered.render_mode == RenderMode.DOWNLOAD
@@ -175,8 +178,9 @@ class TestRenderers:
     def test_json_renderer(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.JSON)
         opt = ProfileOptions()
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt)
+        rendered = renderer.render(profile_result, opt, trace_ctx)
 
         assert rendered.mime_type == MimeType.JSON
         assert rendered.render_mode == RenderMode.VIEW
@@ -191,8 +195,9 @@ class TestRenderers:
     def test_json_renderer_content_structure(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.JSON)
         opt = ProfileOptions()
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt)
+        rendered = renderer.render(profile_result, opt, trace_ctx)
 
         assert isinstance(rendered.content, dict)
         func_stats = rendered.content["func_stats"]
@@ -213,8 +218,9 @@ class TestRenderers:
     def test_json_renderer_respects_limit(self, profile_result: cProfile.Profile) -> None:
         renderer = get_renderer(ProfileFormat.JSON)
         opt = ProfileOptions(limit=5)
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result, opt)
+        rendered = renderer.render(profile_result, opt, trace_ctx)
 
         assert isinstance(rendered.content, dict)
         func_stats = rendered.content["func_stats"]
@@ -312,3 +318,71 @@ class TestGlobalProfilerInstance:
             _do_some_work()
 
         assert isinstance(p, cProfile.Profile)
+
+
+class TestTraceContext:
+    @pytest.fixture
+    def profile_result(self) -> cProfile.Profile:
+        profiler = CProfileProfiler()
+
+        with profiler.profile() as p:
+            _do_some_work()
+
+        return p
+
+    def test_text_renderer_with_valid_trace_context(self, profile_result: cProfile.Profile) -> None:
+        renderer = get_renderer(ProfileFormat.TEXT)
+        opt = ProfileOptions()
+        trace_ctx = TraceContext(trace_id="abc123", span_id="def456")
+
+        rendered = renderer.render(profile_result, opt, trace_ctx)
+
+        assert "_trace-abc123_span-def456" in rendered.file_name
+        assert rendered.metadata == {"trace_id": "abc123", "span_id": "def456"}
+
+    def test_pstat_renderer_with_valid_trace_context(self, profile_result: cProfile.Profile) -> None:
+        renderer = get_renderer(ProfileFormat.PSTAT)
+        opt = ProfileOptions()
+        trace_ctx = TraceContext(trace_id="abc123", span_id="def456")
+
+        rendered = renderer.render(profile_result, opt, trace_ctx)
+
+        assert "_trace-abc123_span-def456" in rendered.file_name
+        assert rendered.metadata == {"trace_id": "abc123", "span_id": "def456"}
+
+    def test_json_renderer_with_valid_trace_context(self, profile_result: cProfile.Profile) -> None:
+        renderer = get_renderer(ProfileFormat.JSON)
+        opt = ProfileOptions()
+        trace_ctx = TraceContext(trace_id="abc123", span_id="def456")
+
+        rendered = renderer.render(profile_result, opt, trace_ctx)
+
+        assert "_trace-abc123_span-def456" in rendered.file_name
+        assert rendered.metadata == {"trace_id": "abc123", "span_id": "def456"}
+        assert isinstance(rendered.content, dict)
+        assert "trace_context" in rendered.content
+        assert rendered.content["trace_context"] == {"trace_id": "abc123", "span_id": "def456"}
+
+    def test_json_renderer_without_trace_context(self, profile_result: cProfile.Profile) -> None:
+        renderer = get_renderer(ProfileFormat.JSON)
+        opt = ProfileOptions()
+        trace_ctx = TraceContext()  # Empty/invalid context
+
+        rendered = renderer.render(profile_result, opt, trace_ctx)
+
+        assert "_trace-" not in rendered.file_name
+        assert rendered.metadata is None
+        assert isinstance(rendered.content, dict)
+        assert "trace_context" not in rendered.content
+
+    def test_profile_handler_captures_trace_context(self) -> None:
+        handler = ProfileHandler({"format": "json"})
+
+        with handler.profile():
+            _do_some_work()
+
+        # Without OTel configured, trace context should be empty
+        assert handler._trace_ctx is not None
+        # Note: trace_ctx will be invalid (empty) without active OTel span
+        rendered = handler.render_profile()
+        assert rendered is not None

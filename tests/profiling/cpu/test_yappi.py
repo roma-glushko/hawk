@@ -24,6 +24,7 @@ from hawk.profiling.cpu.yappi import (
 )
 from hawk.profiling.renderers import MimeType, RenderMode
 from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
+from hawk.profiling.trace_context import TraceContext
 
 
 def _do_some_work() -> int:
@@ -180,8 +181,9 @@ class TestRenderers:
 
     def test_pstat_renderer(self, profile_result: yp.ProfileResult) -> None:
         renderer = get_renderer(ProfileFormat.PSTAT)
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result)
+        rendered = renderer.render(profile_result, trace_ctx)
 
         assert rendered.mime_type == MimeType.BINARY
         assert rendered.render_mode == RenderMode.DOWNLOAD
@@ -192,8 +194,9 @@ class TestRenderers:
 
     def test_callgrind_renderer(self, profile_result: yp.ProfileResult) -> None:
         renderer = get_renderer(ProfileFormat.CALLGRIND)
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result)
+        rendered = renderer.render(profile_result, trace_ctx)
 
         assert rendered.mime_type == MimeType.BINARY
         assert rendered.render_mode == RenderMode.DOWNLOAD
@@ -204,8 +207,9 @@ class TestRenderers:
 
     def test_funcstats_renderer(self, profile_result: yp.ProfileResult) -> None:
         renderer = get_renderer(ProfileFormat.FUNC_STATS)
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result)
+        rendered = renderer.render(profile_result, trace_ctx)
 
         assert rendered.mime_type == MimeType.JSON
         assert rendered.render_mode == RenderMode.VIEW
@@ -219,8 +223,9 @@ class TestRenderers:
 
     def test_funcstats_renderer_content_structure(self, profile_result: yp.ProfileResult) -> None:
         renderer = get_renderer(ProfileFormat.FUNC_STATS)
+        trace_ctx = TraceContext()
 
-        rendered = renderer.render(profile_result)
+        rendered = renderer.render(profile_result, trace_ctx)
 
         assert isinstance(rendered.content, dict)
         func_stats = rendered.content["func_stats"]

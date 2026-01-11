@@ -100,3 +100,4 @@ nav:
   - FastAPI: integrations/fastapi.md
   - Starlette: integrations/starlette.md
   - Flask: integrations/flask.md
+  - OpenTelemetry: integrations/opentelemetry.md
