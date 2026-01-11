@@ -1,11 +1,55 @@
 # CPU Profiling
 
-Hawk supports two CPU profilers with different strengths:
+Hawk supports three CPU profilers with different strengths:
 
-| Profiler | Best For | Output Formats |
-|----------|----------|----------------|
-| **PyInstrument** | Async code, readable flame graphs | HTML, JSON, Speedscope |
-| **Yappi** | Multi-threaded apps, precise timing | pstat, Callgrind, JSON |
+| Profiler | Best For | Output Formats | Install |
+|----------|----------|----------------|---------|
+| **cProfile** | Quick profiling, no dependencies | Text, JSON, pstat | Built-in |
+| **PyInstrument** | Async code, readable flame graphs | HTML, JSON, Speedscope | Extra |
+| **Yappi** | Multi-threaded apps, precise timing | pstat, Callgrind, JSON | Extra |
+
+## cProfile
+
+Python's built-in deterministic profiler. Zero dependencies, always available.
+
+**Install:** Included with Python (no extra installation needed)
+
+### Endpoints
+
+```
+GET /debug/prof/cpu/cprofile/           # Profile for fixed duration
+GET /debug/prof/cpu/cprofile/start/     # Start manual profiling
+GET /debug/prof/cpu/cprofile/stop/      # Stop and get results
+```
+
+### Parameters
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `duration` | 5 | Profiling duration in seconds |
+| `format` | text | Output: `text`, `json`, `pstat` |
+| `sort` | cumulative | Sort by: `cumulative`, `time`, `calls`, `name` |
+| `limit` | 30 | Number of functions to show |
+
+### Output Formats
+
+- **text**: Human-readable pstats output, viewable in browser
+- **json**: Structured JSON with per-function statistics
+- **pstat**: Binary pstats format for use with `pstats` module or tools like snakeviz
+
+### Example
+
+```bash
+# Get text output (default)
+curl "http://localhost:8000/debug/prof/cpu/cprofile/"
+
+# Get JSON with top 50 functions sorted by total time
+curl "http://localhost:8000/debug/prof/cpu/cprofile/?format=json&sort=time&limit=50"
+
+# Export for snakeviz visualization
+curl "http://localhost:8000/debug/prof/cpu/cprofile/?format=pstat" > profile.pstat
+snakeviz profile.pstat
+```
 
 ## PyInstrument
 
@@ -91,5 +135,6 @@ qcachegrind profile.callgrind
 
 ## When to Use Which
 
+- **cProfile**: Quick profiling with no setup, standard Python tooling, works everywhere
 - **PyInstrument**: Async services, quick visualization, identifying slow code paths
-- **Yappi**: Multi-threaded apps, precise CPU time measurement, integration with standard Python profiling tools
+- **Yappi**: Multi-threaded apps, precise CPU time measurement, per-thread statistics
