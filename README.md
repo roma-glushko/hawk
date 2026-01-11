@@ -2,6 +2,18 @@
     <img src="https://raw.githubusercontent.com/roma-glushko/hawk/main/assets/logo/hawk-debug_transparent_bg.png" width="300px" alt="Hawk Debug Toolkit For Python" />
     <h1>Hawk</h1>
     <p>Lightweight debugging & profiling toolkit <br/> for production 🐍Python services</p>
+    <a href="https://hawk-debug.readthedocs.io/en/latest/">
+        <img src="https://img.shields.io/readthedocs/hawk-debug" alt="Read the Docs" />
+    </a>
+    <a href="https://pypi.org/project/hawk-debug/">
+        <img src="https://img.shields.io/pypi/v/hawk-debug" alt="PyPI - Version" />
+    </a>
+    <a href="https://pypi.org/project/hawk-debug/">
+        <img src="https://img.shields.io/pypi/dm/hawk-debug" alt="PyPI - Downloads" />
+    </a>
+    <a href="https://github.com/roma-glushko/hawk/blob/main/LICENSE">
+        <img src="https://img.shields.io/github/license/roma-glushko/hawk" alt="Apache-2.0" />
+    </a>
 </div>
 
 ## Features
