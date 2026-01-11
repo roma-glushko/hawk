@@ -7,6 +7,7 @@ Hawk provides on-demand profiling for production services.
 | Type | Profiler | Use Case |
 |------|----------|----------|
 | [Memory](memory.md) | tracemalloc | Track memory allocations, find leaks |
+| [CPU](cpu.md) | cProfile | Built-in, no dependencies, standard tooling |
 | [CPU](cpu.md) | PyInstrument | Async-aware sampling, flame graphs |
 | [CPU](cpu.md) | Yappi | Multi-threaded, precise timing |
 

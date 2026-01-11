@@ -7,7 +7,7 @@
 ## Features
 
 - **Memory Profiling** - tracemalloc-based allocation tracking
-- **CPU Profiling** - pyinstrument (async-aware) and yappi (multi-threaded, CPU/wall time)
+- **CPU Profiling** - cProfile (built-in), pyinstrument (async-aware), yappi (multi-threaded)
 - **Debug Vars** - expose internal service state
 - **ZPages** - custom debug dashboard
 - **On-demand activation** - profile only when needed, download profiles for further investigation or render them in the browser
@@ -68,6 +68,9 @@ app.register_blueprint(create_debug_blueprint(), url_prefix="/debug")
 
 | Endpoint | Description |
 |----------|-------------|
+| `/debug/prof/cpu/cprofile/` | CPU profile with cProfile (fixed duration) |
+| `/debug/prof/cpu/cprofile/start/` | Start cProfile CPU profiling |
+| `/debug/prof/cpu/cprofile/stop/` | Stop and get cProfile CPU profile |
 | `/debug/prof/cpu/pyinstrument/` | CPU profile with pyinstrument (fixed duration) |
 | `/debug/prof/cpu/pyinstrument/start/` | Start pyinstrument CPU profiling |
 | `/debug/prof/cpu/pyinstrument/stop/` | Stop and get pyinstrument CPU profile |
@@ -82,6 +85,12 @@ app.register_blueprint(create_debug_blueprint(), url_prefix="/debug")
 | `/debug/` | ZPages dashboard |
 
 ## Query Parameters
+
+### CPU Profiling (cProfile)
+- `duration` - profile duration in seconds (default: 5)
+- `format` - output: `text`, `json`, `pstat` (binary)
+- `sort` - sort by: `cumulative`, `time`, `calls`, `name`
+- `limit` - number of functions to show (default: 30)
 
 ### CPU Profiling (pyinstrument)
 - `duration` - profile duration in seconds (default: 5)

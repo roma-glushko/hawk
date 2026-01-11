@@ -26,6 +26,7 @@ class RenderMode(str, Enum):
 class MimeType(str, Enum):
     JSON = "application/json"
     HTML = "text/html"
+    TEXT = "text/plain"
     BINARY = "application/octet-stream"
 
 
