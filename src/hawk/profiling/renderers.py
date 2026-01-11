@@ -36,3 +36,4 @@ class RenderedProfile:
     mime_type: MimeType
     render_mode: RenderMode
     content: bytes | str | dict[str, Any]
+    metadata: dict[str, Any] | None = None

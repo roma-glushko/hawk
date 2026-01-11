@@ -27,6 +27,7 @@ from typing import Any, Iterator, TypedDict, List, Union, Generator, Protocol, M
 
 from hawk.profiling.exceptions import ProfilingAlreadyStarted, ProfilingNotStarted
 from hawk.profiling.renderers import RenderMode, MimeType, RenderedProfile
+from hawk.profiling.trace_context import TraceContext, profiling_span
 
 
 def format_bytes(value: int) -> str:
@@ -195,7 +196,8 @@ class Renderer(Protocol):
     def render(
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
-        opt: RendererOptions
+        opt: RendererOptions,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
         ...
 
@@ -205,24 +207,28 @@ class LinenoSnapshotRenderer:
     file_ext: str = "json"
     render_mode: RenderMode = RenderMode.VIEW
 
-    def get_file_name(self) -> str:
+    def get_file_name(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_mem_tracemalloc_snapshot_{timestamp}.{self.file_ext}"
+        return f"hwk_mem_tracemalloc_snapshot_{timestamp}{trace_suffix}.{self.file_ext}"
 
     def render(
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
+
         if isinstance(profile, PointInTimeProfile):
-            return self._render_point_in_time_profile(profile, opt.count, opt.cumulative)
+            return self._render_point_in_time_profile(profile, opt.count, opt.cumulative, trace_ctx)
 
         if isinstance(profile, IntervalProfile):
-            return self._render_interval_profile(profile, opt.count, opt.cumulative)
+            return self._render_interval_profile(profile, opt.count, opt.cumulative, trace_ctx)
 
         if isinstance(profile, IntervalProfileProxy):
-            return self._render_interval_profile(profile.get(), opt.count, opt.cumulative)
+            return self._render_interval_profile(profile.get(), opt.count, opt.cumulative, trace_ctx)
 
         raise ValueError("Invalid profile type")
 
@@ -231,7 +237,9 @@ class LinenoSnapshotRenderer:
         profile: PointInTimeProfile,
         count: int = 10,
         cumulative: bool = False,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
         top_stats = profile.snapshot.statistics("lineno", cumulative=cumulative)
 
         heap_usage = {
@@ -239,14 +247,22 @@ class LinenoSnapshotRenderer:
             "heap_current": format_bytes(profile.heap_usage_bytes),
         }
 
+        content: dict[str, Any] = {
+            "stats": list(self._format_lineno(top_stats, count=count)),
+            **heap_usage,
+        }
+
+        metadata = None
+        if trace_ctx.is_valid:
+            content["trace_context"] = trace_ctx.to_dict()
+            metadata = trace_ctx.to_dict()
+
         return RenderedProfile(
-            file_name=self.get_file_name(),
+            file_name=self.get_file_name(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
-            content={
-                "stats": list(self._format_lineno(top_stats, count=count)),
-                **heap_usage,
-            },
+            content=content,
+            metadata=metadata,
         )
 
     def _render_interval_profile(
@@ -254,7 +270,9 @@ class LinenoSnapshotRenderer:
         profile: IntervalProfile,
         count: int = 10,
         cumulative: bool = False,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
         top_stats = profile.stop_snapshot.compare_to(
             profile.start_snapshot,
             "lineno",
@@ -270,14 +288,22 @@ class LinenoSnapshotRenderer:
             "heap_diff": format_bytes(heap_diff_bytes),
         }
 
+        content: dict[str, Any] = {
+            "stats": list(self._format_lineno(top_stats, count=count)),
+            **heap_usage,
+        }
+
+        metadata = None
+        if trace_ctx.is_valid:
+            content["trace_context"] = trace_ctx.to_dict()
+            metadata = trace_ctx.to_dict()
+
         return RenderedProfile(
-            file_name=self.get_file_name(),
+            file_name=self.get_file_name(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
-            content={
-                "stats": list(self._format_lineno(top_stats, count=count)),
-                **heap_usage,
-            },
+            content=content,
+            metadata=metadata,
         )
 
     def _format_lineno(self, top_stats: AnyStats, count: int = 10) -> Iterator[dict[str, Any]]:
@@ -302,27 +328,31 @@ class TracebackSnapshotRender:
     file_ext: str = "json"
     render_mode: RenderMode = RenderMode.VIEW
 
-    def get_file_name(self) -> str:
+    def get_file_name(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_mem_tracemalloc_snapshot_{timestamp}.{self.file_ext}"
+        return f"hwk_mem_tracemalloc_snapshot_{timestamp}{trace_suffix}.{self.file_ext}"
 
     def render(
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
         """
         Render the snapshot in a human-readable format
         """
+        trace_ctx = trace_ctx or TraceContext()
+
         if isinstance(profile, PointInTimeProfile):
-            return self._render_point_in_time_profile(profile, opt.count)
+            return self._render_point_in_time_profile(profile, opt.count, trace_ctx)
 
         if isinstance(profile, IntervalProfile):
-            return self._render_interval_profile(profile, opt.count)
+            return self._render_interval_profile(profile, opt.count, trace_ctx)
 
         if isinstance(profile, IntervalProfileProxy):
-            return self._render_interval_profile(profile.get(), opt.count)
+            return self._render_interval_profile(profile.get(), opt.count, trace_ctx)
 
         raise ValueError("Invalid profile type")
 
@@ -330,7 +360,9 @@ class TracebackSnapshotRender:
         self,
         profile: PointInTimeProfile,
         count: int = 10,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
         top_stats = profile.snapshot.statistics("traceback")
 
         heap_usage = {
@@ -338,21 +370,31 @@ class TracebackSnapshotRender:
             "heap_current": format_bytes(profile.heap_usage_bytes),
         }
 
+        content: dict[str, Any] = {
+            "stats": list(self._format_traceback(top_stats, count=count)),
+            **heap_usage,
+        }
+
+        metadata = None
+        if trace_ctx.is_valid:
+            content["trace_context"] = trace_ctx.to_dict()
+            metadata = trace_ctx.to_dict()
+
         return RenderedProfile(
-            file_name=self.get_file_name(),
+            file_name=self.get_file_name(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
-            content={
-                "stats": list(self._format_traceback(top_stats, count=count)),
-                **heap_usage,
-            },
+            content=content,
+            metadata=metadata,
         )
 
     def _render_interval_profile(
         self,
         profile: IntervalProfile,
         count: int = 10,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
+        trace_ctx = trace_ctx or TraceContext()
         top_stats = profile.stop_snapshot.compare_to(
             profile.start_snapshot,
             "traceback",
@@ -367,14 +409,22 @@ class TracebackSnapshotRender:
             "heap_diff": format_bytes(heap_diff_bytes),
         }
 
+        content: dict[str, Any] = {
+            "stats": list(self._format_traceback(top_stats, count=count)),
+            **heap_usage,
+        }
+
+        metadata = None
+        if trace_ctx.is_valid:
+            content["trace_context"] = trace_ctx.to_dict()
+            metadata = trace_ctx.to_dict()
+
         return RenderedProfile(
-            file_name=self.get_file_name(),
+            file_name=self.get_file_name(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
-            content={
-                "stats": list(self._format_traceback(top_stats, count=count)),
-                **heap_usage,
-            },
+            content=content,
+            metadata=metadata,
         )
 
     def _format_traceback(self, top_stats: AnyStats, count: int = 10) -> Iterator[dict[str, Any]]:
@@ -392,19 +442,23 @@ class PickleSnapshotRenderer:
     file_ext: str = "pkl"
     render_mode: RenderMode = RenderMode.DOWNLOAD
 
-    def get_file_name(self) -> str:
+    def get_file_name(self, trace_ctx: TraceContext) -> str:
         timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        trace_suffix = trace_ctx.format_for_filename()
 
-        return f"hwk_mem_tracemalloc_snapshot_{timestamp}.{self.file_ext}"
+        return f"hwk_mem_tracemalloc_snapshot_{timestamp}{trace_suffix}.{self.file_ext}"
 
     def render(
         self,
         profile: PointInTimeProfile | IntervalProfile | IntervalProfileProxy,
         opt: RendererOptions,
+        trace_ctx: TraceContext | None = None,
     ) -> RenderedProfile:
         """
         Pickling the snapshot class to be able to analyze it later via loading it with `Snapshot.load()`
         """
+        trace_ctx = trace_ctx or TraceContext()
+
         snapshot: tracemalloc.Snapshot
 
         if isinstance(profile, PointInTimeProfile):
@@ -425,11 +479,14 @@ class PickleSnapshotRenderer:
 
         snapshot_content.seek(0)
 
+        metadata = trace_ctx.to_dict() if trace_ctx.is_valid else None
+
         return RenderedProfile(
-            file_name=self.get_file_name(),
+            file_name=self.get_file_name(trace_ctx),
             mime_type=self.mime_type,
             render_mode=self.render_mode,
             content=snapshot_content.getvalue(),
+            metadata=metadata,
         )
 
 
@@ -457,18 +514,32 @@ class ProfileHandler:
         self._format = ProfileFormat(query_params.get("format", ProfileFormat.LINENO))
 
         self._interval_profile: IntervalProfileProxy | None = None
+        self._trace_ctx: TraceContext | None = None
 
     @contextmanager
     def profile(self) -> Generator[None, None, None]:
-        with profiler.profile(self._opt) as profile_proxy:
-            self._interval_profile = profile_proxy
-            yield
+        span_attributes = {
+            "hawk.format": self._format.value,
+            "hawk.frames": self._opt.frames,
+            "hawk.gc": self._opt.gc,
+        }
+
+        with profiling_span("mem", "tracemalloc", span_attributes):
+            # Capture trace context at the start of profiling (inside the span)
+            self._trace_ctx = TraceContext.from_current_span()
+
+            with profiler.profile(self._opt) as profile_proxy:
+                self._interval_profile = profile_proxy
+                yield
 
     def render_profile(self) -> RenderedProfile:
         if self._interval_profile is None:
             raise RuntimeError("Interval profile is not set")
 
+        trace_ctx = self._trace_ctx or TraceContext()
+
         return get_renderer(self._format).render(
             self._interval_profile,
             self._renderer_opt,
+            trace_ctx,
         )
