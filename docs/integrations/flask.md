@@ -1,7 +1,7 @@
 # Flask Integration
 
 <div align="center" style="display: flex; justify-content: center; align-items: center">
-    <img src="/assets/contrib/flask.png" width="300px" alt="Flask Logo" />
+    <img src="assets/contrib/flask.png" width="300px" alt="Flask Logo" />
 </div>
 
 Debug and profiling support for [Flask applications](https://flask.palletsprojects.com/en/stable/).

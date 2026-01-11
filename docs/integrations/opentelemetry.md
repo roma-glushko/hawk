@@ -1,7 +1,7 @@
 # OpenTelemetry Integration
 
 <div align="center" style="display: flex; justify-content: center; align-items: center">
-    <img src="/assets/contrib/opentelemetry.svg" width="300px" alt="OpenTelemetry Logo" />
+    <img src="assets/contrib/opentelemetry.svg" width="300px" alt="OpenTelemetry Logo" />
 </div>
 
 Hawk integrates with [OpenTelemetry](https://opentelemetry.io/) to link profiling data with distributed traces. This allows you to correlate performance profiles with specific requests and trace spans.
